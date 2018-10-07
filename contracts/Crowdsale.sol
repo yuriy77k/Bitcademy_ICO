@@ -22,7 +22,8 @@ contract Crowdsale is Ownable{
   BitcademyToken public token;
 
   // Address where funds are collected
-  address public wallet;
+  //address public wallet;
+   address public multisig_wallet = 0xc5384F3d5602eC5F52e50F28e650685E9c5F3016;
 
   // No of wei needed for each token
   uint256 public rate;
@@ -133,9 +134,9 @@ contract Crowdsale is Ownable{
    * @param _wallet Address where collected funds will be forwarded to
    * @param _token Address of the token being sold
    */
-  constructor(uint256 _rate, address _wallet, BitcademyToken _token, uint256 _openingTime, uint256 _closingTime,address _tokenHolder,uint256 _goal) public {
+  constructor(uint256 _rate, BitcademyToken _token, uint256 _openingTime, uint256 _closingTime,address _tokenHolder,uint256 _goal) public {
     require(_rate > 0);
-    require(_wallet != address(0));
+    require(multisig_wallet != address(0));
     require(_token != address(0));
     require(_tokenHolder!= address(0));
     require(_openingTime >= block.timestamp);
@@ -145,7 +146,7 @@ contract Crowdsale is Ownable{
     vault = new RefundVault(wallet);
     goal = _goal;
     rate = _rate;
-    wallet = _wallet;
+    wallet = multisig_wallet;
     token = _token;
     tokenHolder = _tokenHolder;
     openingTime = _openingTime;
