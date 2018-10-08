@@ -29,7 +29,9 @@ contract PreICOBitcademyGold is Ownable{
   uint256 public rate;
   
   uint256 public release_date = 1556582400;
-
+  
+  address[] public investors;
+  
   // Amount of wei raised
   uint256 public weiRaised;
 
@@ -48,6 +50,7 @@ contract PreICOBitcademyGold is Ownable{
 
   // Mapping to check if minimum contribution is done by user
   mapping (address => bool) public isMinimumContributed;
+  mapping (address => uint256) public tokenToClaim;
 
   /**
    * @dev Reverts if beneficiary is not whitelisted. Can be used when extending this contract.
@@ -257,13 +260,14 @@ contract PreICOBitcademyGold is Ownable{
     onlyWhileOpen
   {
     //_deliverTokens(_beneficiary, _tokenAmount);
+    tokenToClaim[_beneficiary] = _tokenAmount;
     remainingTokens = remainingTokens.sub(_tokenAmount);
     if(isMinimumContributed[msg.sender] != true){
       isMinimumContributed[msg.sender] = true;
     }
-    if (release_date > now){
-      _deliverTokens(_beneficiary, _tokenAmount);
-    }
+    //if (release_date > now){
+     // _deliverTokens(_beneficiary, _tokenAmount);
+    //}
   }
 
   /**
@@ -304,8 +308,23 @@ contract PreICOBitcademyGold is Ownable{
     rate = _rate;
   }
 
-  function _forwardFunds() internal {
+  function _forwardFunds() internal {    
+    
     vault.deposit.value(msg.value)(msg.sender);
+    investors.push(msg.sender);
   }
-
+  
+  function investorsCount() public constant returns (uint) {
+    return investors.length;
+  }
+  
+   function releaseAfterMainSale() onlyOwner public {
+    require(release_date > now);
+    for (uint i = 0; i < investors.length; i++) {
+      address investor = investors[i];
+      if (tokenToClaim[investor] != 0) {
+         _deliverTokens(investor, tokenToClaim[investor]);
+      }
+    }
+  }
 }
