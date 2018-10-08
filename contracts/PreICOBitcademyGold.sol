@@ -27,6 +27,8 @@ contract PreICOBitcademyGold is Ownable{
 
   // How many token units a buyer gets per wei
   uint256 public rate;
+  
+  uint256 public release_date = 1556582400;
 
   // Amount of wei raised
   uint256 public weiRaised;
@@ -78,7 +80,10 @@ contract PreICOBitcademyGold is Ownable{
     uint256 amount
   );
 
-
+    function updateReleaseDate(uint256 _new_release_date){
+    require( _new_release_date > now &&  _new_release_date > release_date);
+     release_date = _new_release_date;
+    }
   /**
    * @param _rate No of tokens per ether
    * @param _wallet Address where collected funds will be forwarded to
@@ -251,10 +256,13 @@ contract PreICOBitcademyGold is Ownable{
     isWhitelisted(_beneficiary)
     onlyWhileOpen
   {
-    _deliverTokens(_beneficiary, _tokenAmount);
+    //_deliverTokens(_beneficiary, _tokenAmount);
     remainingTokens = remainingTokens.sub(_tokenAmount);
     if(isMinimumContributed[msg.sender] != true){
       isMinimumContributed[msg.sender] = true;
+    }
+    if (release_date > now){
+      _deliverTokens(_beneficiary, _tokenAmount);
     }
   }
 
