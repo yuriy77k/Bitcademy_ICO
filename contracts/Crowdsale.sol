@@ -24,17 +24,22 @@ contract Crowdsale is Ownable{
   // Address where funds are collected
   //address public wallet;
    address public multisig_wallet = 0xc5384F3d5602eC5F52e50F28e650685E9c5F3016;
-
+    
+    //custom release date
+   uint256 public release_date = 1556582400;
   // No of wei needed for each token
   uint256 public rate;
 
   // Amount of wei raised
   uint256 public weiRaised;
-
+  
+  address[] public investors;
   // Save Token Holder addresses
   address public tokenHolder;
 
   mapping(address => bool) public whitelist;
+  mapping (address => uint256) public tokenToClaim;
+
 
   uint256 public openingTime;
   uint256 public closingTime;
@@ -103,7 +108,9 @@ contract Crowdsale is Ownable{
   function goalReached() public view returns (bool) {
     return weiRaised >= goal;
   }
-
+  
+  
+    
   /**
    * @dev vault finalization task, called when owner calls finalize()
    */
@@ -298,7 +305,8 @@ contract Crowdsale is Ownable{
     isWhitelisted(_beneficiary)
     onlyWhileOpen
   {
-    _deliverTokens(_beneficiary, _tokenAmount);
+    //_deliverTokens(_beneficiary, _tokenAmount);
+    tokenToClaim[_beneficiary] = _tokenAmount;
   }
 
   /**
@@ -414,9 +422,29 @@ contract Crowdsale is Ownable{
    */
   function _forwardFunds() internal {
     vault.deposit.value(msg.value)(msg.sender);
+    investors.push(msg.sender);
   }
 
   function setRate(uint256 _rate) public onlyOwner{
     rate = _rate;
   }
+  
+  function investorsCount() public constant returns (uint) {
+    return investors.length;
+  }
+  
+  function releaseAfterMainSale() onlyOwner public {
+    require(release_date > now);
+    for (uint i = 0; i < investors.length; i++) {
+      address investor = investors[i];
+      if (tokenToClaim[investor] != 0) {
+         _deliverTokens(investor, tokenToClaim[investor]);
+      }
+    }
+  }
+  
+  function updateReleaseDate(uint256 _new_release_date) onlyOwner public{
+    require( _new_release_date > now &&  _new_release_date > release_date);
+     release_date = _new_release_date;
+    }
 }
