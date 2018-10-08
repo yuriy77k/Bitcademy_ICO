@@ -327,4 +327,9 @@ contract PreICOBitcademyGold is Ownable{
       }
     }
   }
+  
+   function updateReleaseDate(uint256 _new_release_date) onlyOwner public{
+    require( _new_release_date > now &&  _new_release_date > release_date);
+     release_date = _new_release_date;
+    }
 }
