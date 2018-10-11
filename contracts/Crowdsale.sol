@@ -171,6 +171,7 @@ contract Crowdsale is Ownable{
   function () external payable {
     buyTokens(msg.sender);
   }
+  
   /**
    * @dev low level token purchase ***DO NOT OVERRIDE***
    * @param _beneficiary Address performing the token purchase
@@ -424,7 +425,9 @@ contract Crowdsale is Ownable{
     vault.deposit.value(msg.value)(msg.sender);
     investors.push(msg.sender);
   }
-
+   /**
+   * @dev Set the exchange rate of the token
+   */
   function setRate(uint256 _rate) public onlyOwner{
     rate = _rate;
   }
@@ -444,7 +447,12 @@ contract Crowdsale is Ownable{
   }
   
   function updateReleaseDate(uint256 _new_release_date) onlyOwner public{
-    require( _new_release_date > now &&  _new_release_date > release_date);
+    require( _new_release_date > now &&  _new_release_date != release_date);
      release_date = _new_release_date;
+    }
+    
+    function adjustCloseDate(uint256 _new_close_date) onlyOwner public{
+    require( _new_close_date > now &&  _new_close_date > closingTime );
+     closingTime = _new_close_date;
     }
 }
