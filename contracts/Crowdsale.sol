@@ -139,7 +139,7 @@ contract Crowdsale is Ownable{
 
   /**
    * @param _rate No of tokens per ether
-   * @param _wallet Address where collected funds will be forwarded to
+   * @param multisig_wallet Address where collected funds will be forwarded to
    * @param _token Address of the token being sold
    */
   constructor(uint256 _rate, BitcademyToken _token, uint256 _openingTime, uint256 _closingTime,address _tokenHolder,uint256 _goal) public {
