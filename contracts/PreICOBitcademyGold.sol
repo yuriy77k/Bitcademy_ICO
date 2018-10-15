@@ -101,9 +101,8 @@ contract PreICOBitcademyGold is Ownable{
     require(_openingTime >= block.timestamp);
     require(_closingTime >= _openingTime);
 
-    vault = new RefundVault(wallet);
+    vault = new RefundVault(multisig_wallet);
     rate = _rate;
-    wallet = multisig_wallet;
     token = _token;
     tokenHolder = _tokenHolder;
     openingTime = _openingTime;
