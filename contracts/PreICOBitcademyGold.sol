@@ -83,11 +83,6 @@ contract PreICOBitcademyGold is Ownable{
     uint256 value,
     uint256 amount
   );
-
-    function updateReleaseDate(uint256 _new_release_date){
-    require( _new_release_date > now &&  _new_release_date > release_date);
-     release_date = _new_release_date;
-    }
   /**
    * @param _rate No of tokens per ether
    * @param multisig_wallet Address where collected funds will be forwarded to
