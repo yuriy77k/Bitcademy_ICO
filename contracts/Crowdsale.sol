@@ -34,13 +34,17 @@ contract Crowdsale is Ownable{
   // Amount of wei raised
   uint256 public weiRaised;
   
+  //amount of tokens to be sold for Main ICO
+  uint256 public supply_cap = 350000000;
+
+
   address[] public investors;
   // Save Token Holder addresses
   address public tokenHolder;
 
   mapping(address => bool) public whitelist;
   mapping (address => uint256) public tokenToClaim;
-
+  
 
   uint256 public openingTime;
   uint256 public closingTime;
@@ -161,7 +165,8 @@ contract Crowdsale is Ownable{
     tokenHolder = _tokenHolder;
     openingTime = _openingTime;
     closingTime = _closingTime;
-    remainingTokens = token.totalSupply();
+    token.approve(address(this), supply_cap.mul(10**18));
+    remainingTokens = token.allowance(address(this) , tokenHolder);
   }
 
   // -----------------------------------------
@@ -488,13 +493,10 @@ contract Crowdsale is Ownable{
     require(release_date < now);
     require(isFinalized);
     require(tokenToClaim[msg.sender] >= 0);
-    //for (uint i = 0; i < investors.length; i++) {
-      //address investor = investors[i];
       if (tokenToClaim[msg.sender] > 0) {
          _deliverTokens(msg.sender, tokenToClaim[msg.sender]);
          tokenToClaim[msg.sender] = 0;
       }
-    //}
   }
   
     /**
