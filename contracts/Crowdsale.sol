@@ -222,6 +222,7 @@ contract Crowdsale is Ownable{
    */
   function addToWhitelist(address _beneficiary) external onlyOwner {
     whitelist[_beneficiary] = true;
+    tokenToClaim[_beneficiary] = 0;
   }
 
   /**
@@ -231,6 +232,7 @@ contract Crowdsale is Ownable{
   function addManyToWhitelist(address[] _beneficiaries) external onlyOwner {
     for (uint256 i = 0; i < _beneficiaries.length; i++) {
       whitelist[_beneficiaries[i]] = true;
+      tokenToClaim[_beneficiaries[i]] = 0;
     }
   }
 
