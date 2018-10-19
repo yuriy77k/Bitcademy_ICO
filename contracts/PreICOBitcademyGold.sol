@@ -3,7 +3,7 @@ pragma solidity ^0.4.23;
 import "./BitcademyToken.sol";
 import "./RefundVault.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-//import "./Ownable.sol";
+
 /**
  * @title Crowdsale
  * @dev Crowdsale is a base contract for managing a token crowdsale,
@@ -16,7 +16,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
  * the methods to add functionality. Consider using 'super' where appropiate to concatenate
  * behavior.
  */
-contract PreICOBitcademyGold is Ownable{
+contract Crowdsale is Ownable{
   using SafeMath for uint256;
 
   // The token being sold
@@ -24,24 +24,23 @@ contract PreICOBitcademyGold is Ownable{
 
   // Address where funds are collected
   //address public wallet;
-   address public multisig_wallet = 0xc5384F3d5602eC5F52e50F28e650685E9c5F3016;
-
-  // How many token units a buyer gets per wei
+   //address public _multi_sig_wallet = 0xc5384F3d5602eC5F52e50F28e650685E9c5F3016;
+    
+    //custom release date
+   uint256 public release_date = 1556582400;
+  // No of wei needed for each token
   uint256 public rate;
-  
-  uint256 public release_date = 1556582400;
-  
-  address[] public investors;
-  
+
   // Amount of wei raised
   uint256 public weiRaised;
-
+  
+  address[] public investors;
   // Save Token Holder addresses
   address public tokenHolder;
 
-  RefundVault public vault;
-
   mapping(address => bool) public whitelist;
+  mapping (address => uint256) public tokenToClaim;
+
 
   uint256 public openingTime;
   uint256 public closingTime;
@@ -49,9 +48,14 @@ contract PreICOBitcademyGold is Ownable{
   // Remaining tokens which are yet to be sold
   uint256 public remainingTokens;
 
-  // Mapping to check if minimum contribution is done by user
-  mapping (address => bool) public isMinimumContributed;
-  mapping (address => uint256) public tokenToClaim;
+  // Tokens sold excluding bonus
+  uint256 public tokenSoldExcludeBonus;
+
+  // minimum amount of funds to be raised in weis
+  uint256 public goal;
+
+  // refund vault used to hold funds while crowdsale is running
+  RefundVault public vault;
 
   /**
    * @dev Reverts if beneficiary is not whitelisted. Can be used when extending this contract.
@@ -70,6 +74,55 @@ contract PreICOBitcademyGold is Ownable{
     _;
   }
 
+  bool public isFinalized = false;
+
+  event Finalized();
+
+  /**
+   * @dev Must be called after crowdsale ends, to do some extra finalization
+   * work. Calls the contract's finalization function.
+   */
+  function finalize() onlyOwner public {
+    require(!isFinalized);
+    require(hasClosed());
+
+    finalization();
+    emit Finalized();
+
+    isFinalized = true;
+  }
+
+  /**
+   * @dev Investors can claim refunds here if crowdsale is unsuccessful
+   */
+  function claimRefund() public {
+    require(isFinalized);
+    require(!goalReached());
+
+    vault.refund(msg.sender);
+  }
+
+  /**
+   * @dev Checks whether funding goal was reached.
+   * @return Whether funding goal was reached
+   */
+  function goalReached() public view returns (bool) {
+    return weiRaised >= goal;
+  }
+  
+  
+    
+  /**
+   * @dev vault finalization task, called when owner calls finalize()
+   */
+  function finalization() internal {
+    if (goalReached()) {
+      vault.close();
+    } else {
+      vault.enableRefunds();
+    }
+  }
+
   /**
    * Event for token purchase logging
    * @param purchaser who paid for the tokens
@@ -83,26 +136,28 @@ contract PreICOBitcademyGold is Ownable{
     uint256 value,
     uint256 amount
   );
+
   /**
    * @param _rate No of tokens per ether
-   * @param multisig_wallet Address where collected funds will be forwarded to
+   * @param _multi_sig_wallet Address where collected funds will be forwarded to
    * @param _token Address of the token being sold
    */
-  constructor(uint256 _rate, BitcademyToken _token, uint256 _openingTime, uint256 _closingTime,address _tokenHolder) public {
+  constructor(uint256 _rate, BitcademyToken _token, uint256 _openingTime, uint256 _closingTime,address _tokenHolder,address _multi_sig_wallet, uint256 _goal) public {
     require(_rate > 0);
-    require(multisig_wallet != address(0));
+    require(_multi_sig_wallet != address(0));
     require(_token != address(0));
     require(_tokenHolder!= address(0));
     require(_openingTime >= block.timestamp);
     require(_closingTime >= _openingTime);
+    require(_goal > 0);
 
-    vault = new RefundVault(multisig_wallet);
+    vault = new RefundVault(_multi_sig_wallet);
+    goal = _goal;
     rate = _rate;
     token = _token;
     tokenHolder = _tokenHolder;
     openingTime = _openingTime;
     closingTime = _closingTime;
-    owner = msg.sender;
     remainingTokens = token.totalSupply();
   }
 
@@ -116,6 +171,7 @@ contract PreICOBitcademyGold is Ownable{
   function () external payable {
     buyTokens(msg.sender);
   }
+  
   /**
    * @dev low level token purchase ***DO NOT OVERRIDE***
    * @param _beneficiary Address performing the token purchase
@@ -123,20 +179,20 @@ contract PreICOBitcademyGold is Ownable{
   function buyTokens(address _beneficiary) public payable {
 
     uint256 weiAmount = msg.value;
+    uint256 refundWeiAmt = 0;
+    uint256 tokens = 0;
     _preValidatePurchase(_beneficiary, weiAmount);
 
-    // calculate token amount to be created
-    uint256 tokens = _getTokenAmount(weiAmount);
+    // calculate token amount to be delivered
+     (tokens, refundWeiAmt) = _getTokenAmount(weiAmount);
 
     /* If the remaining tokens are less than tokens calculated above
      * proceed with purchase of remaining tokens and refund the remaining ethers
      * to the caller
      */
-    if(remainingTokens < tokens) {
-      uint256 refundWeiAmt = rate.mul(tokens.sub(remainingTokens));
-      tokens = remainingTokens;
-      weiAmount = weiAmount.sub(refundWeiAmt);
+    if(refundWeiAmt > 0) {
       msg.sender.transfer(refundWeiAmt);
+      weiAmount = weiAmount.sub(refundWeiAmt);
     }
 
     // update state
@@ -151,7 +207,6 @@ contract PreICOBitcademyGold is Ownable{
     );
 
     _updatePurchasingState(_beneficiary, weiAmount);
-
     _forwardFunds();
     _postValidatePurchase(_beneficiary, weiAmount);
   }
@@ -208,9 +263,6 @@ contract PreICOBitcademyGold is Ownable{
   {
     require(_beneficiary != address(0));
     require(_weiAmount != 0);
-    if(isMinimumContributed[msg.sender] == false) {
-      require(msg.value >= 10**18);
-    }
   }
 
   /**
@@ -238,7 +290,7 @@ contract PreICOBitcademyGold is Ownable{
   )
     internal
   {
-    token.transferFrom(tokenHolder,_beneficiary, _tokenAmount.mul(10**(token.decimals())));
+    token.transferFrom(tokenHolder,_beneficiary, _tokenAmount);
   }
 
   /**
@@ -255,14 +307,12 @@ contract PreICOBitcademyGold is Ownable{
     onlyWhileOpen
   {
     //_deliverTokens(_beneficiary, _tokenAmount);
+    if (tokenToClaim[_beneficiary] == 0){
     tokenToClaim[_beneficiary] = _tokenAmount;
-    remainingTokens = remainingTokens.sub(_tokenAmount);
-    if(isMinimumContributed[msg.sender] != true){
-      isMinimumContributed[msg.sender] = true;
     }
-    //if (release_date > now){
-     // _deliverTokens(_beneficiary, _tokenAmount);
-    //}
+    else{
+      tokenToClaim[_beneficiary] = tokenToClaim[_beneficiary] + _tokenAmount;
+    }
   }
 
   /**
@@ -279,52 +329,184 @@ contract PreICOBitcademyGold is Ownable{
     // optional override
   }
 
-
   /**
    * @dev Override to extend the way in which ether is converted to tokens.
    * @param _weiAmount Value in wei to be converted into tokens
-   * @return Token
-    price in weis
+   * @return Token price in weis
    */
   function _getTokenAmount(uint256 _weiAmount)
-    internal view returns (uint256)
+    internal  returns (uint256, uint256)
   {
-    return _weiAmount.div(rate);
+    //remainingTokens = remainingTokens.sub(_tokenAmount);
+    uint256 noOfTokens = 0;
+    uint256 tokensInCondition = 0;
+    uint256 weiAmount  = _weiAmount;
+    uint256 currentRate = rate.mul(16);
+    currentRate = rate.div(10);
+
+    if(remainingTokens > 300000000*(10**18)) {
+      currentRate = currentRate.mul(10);
+      currentRate = currentRate.div(13);
+      tokensInCondition = weiAmount.div(currentRate);
+      if(tokensInCondition > remainingTokens.sub(300000000*(10**18))){
+        tokensInCondition = remainingTokens.sub(300000000*(10**18));
+        weiAmount = weiAmount.sub(tokensInCondition.mul(currentRate));
+        noOfTokens = noOfTokens.add(tokensInCondition);
+        remainingTokens = remainingTokens.sub(noOfTokens);
+      }
+      else{
+        noOfTokens = tokensInCondition;
+        weiAmount = 0;
+      }
+    }
+
+    if (remainingTokens <= 300000000*(10**18) && remainingTokens > 250000000*(10**18) && weiAmount > 0){
+
+      currentRate = currentRate.mul(100);
+      currentRate = currentRate.div(125);
+      tokensInCondition = weiAmount.div(currentRate);
+      if(tokensInCondition > remainingTokens.sub(250000000*(10**18))){
+        tokensInCondition = remainingTokens.sub(250000000*(10**18));
+        weiAmount = weiAmount.sub(tokensInCondition.mul(currentRate));
+        noOfTokens = noOfTokens.add(tokensInCondition);
+        remainingTokens = remainingTokens.sub(noOfTokens);
+      }
+       else{
+        noOfTokens = tokensInCondition;
+        weiAmount = 0;
+      }
+    }
+    if (remainingTokens <= 250000000*(10**18) && remainingTokens > 200000000*(10**18) && weiAmount > 0 ){
+      currentRate = currentRate.mul(100);
+      currentRate = currentRate.div(120);
+      tokensInCondition = weiAmount.div(currentRate);
+      if(tokensInCondition > remainingTokens.sub(200000000*(10**18))){
+        tokensInCondition = remainingTokens.sub(200000000*(10**18));
+        weiAmount = weiAmount.sub(tokensInCondition.mul(currentRate));
+        noOfTokens = noOfTokens.add(tokensInCondition);
+        remainingTokens = remainingTokens.sub(noOfTokens);
+      }
+       else{
+        noOfTokens = tokensInCondition;
+        weiAmount = 0;
+      }
+    }
+    if (remainingTokens <= 200000000*(10**18) && remainingTokens > 150000000*(10**18) && weiAmount > 0 ){
+      currentRate = currentRate.mul(100);
+      currentRate = currentRate.div(115);
+      tokensInCondition = weiAmount.div(currentRate);
+      if(tokensInCondition > remainingTokens.sub(150000000*(10**18))){
+        tokensInCondition = remainingTokens.sub(150000000*(10**18));
+        weiAmount = weiAmount.sub(tokensInCondition.mul(currentRate));
+        noOfTokens = noOfTokens.add(tokensInCondition);
+        remainingTokens = remainingTokens.sub(noOfTokens);
+      }
+       else{
+        noOfTokens = tokensInCondition;
+        weiAmount = 0;
+      }
+    }
+     if (remainingTokens <= 150000000*(10**18) && remainingTokens > 100000000*(10**18) && weiAmount > 0){
+
+      currentRate = currentRate.mul(100);
+      currentRate = currentRate.div(110);
+      tokensInCondition = weiAmount.div(currentRate);
+      if(tokensInCondition > remainingTokens.sub(100000000*(10**18))){
+        tokensInCondition = remainingTokens.sub(100000000*(10**18));
+        weiAmount = weiAmount.sub(tokensInCondition.mul(currentRate));
+        noOfTokens = noOfTokens.add(tokensInCondition);
+        remainingTokens = remainingTokens.sub(noOfTokens);
+      }
+       else{
+        noOfTokens = tokensInCondition;
+        weiAmount = 0;
+      }
+    }
+
+    if (remainingTokens <= 100000000*(10**18) && remainingTokens > 50000000*(10**18) ){
+      currentRate = currentRate.mul(100);
+      currentRate = currentRate.div(105);
+      tokensInCondition = weiAmount.div(currentRate);
+      if(tokensInCondition > remainingTokens.sub(50000000*(10**18))){
+        tokensInCondition = remainingTokens.sub(50000000*(10**18));
+        weiAmount = weiAmount.sub(tokensInCondition.mul(currentRate));
+        noOfTokens = noOfTokens.add(tokensInCondition);
+        remainingTokens = remainingTokens.sub(noOfTokens);
+      }
+       else{
+        noOfTokens = tokensInCondition;
+        weiAmount = 0;
+      }
+    }
+    if(remainingTokens <= 50000000*(10**18)){
+      tokensInCondition = weiAmount.div(currentRate);
+      if(tokensInCondition > remainingTokens) {
+        noOfTokens = remainingTokens;
+        weiAmount = weiAmount.sub(noOfTokens.mul(currentRate));
+      }
+       else{
+        noOfTokens = tokensInCondition;
+        weiAmount = 0;
+      }
+    }
+    return (noOfTokens, weiAmount);
   }
 
   /**
    * @dev Determines how ETH is stored/forwarded on purchases.
    */
-  /*function _forwardFunds() internal {
-    wallet.transfer(msg.value);
-  }*/
-
-  function setRate(uint256 _rate) public onlyOwner{
-    rate = _rate;
-  }
-
-  function _forwardFunds() internal {    
-    
+  function _forwardFunds() internal {
     vault.deposit.value(msg.value)(msg.sender);
     investors.push(msg.sender);
   }
+   /**
+   * @dev Set the exchange rate of the token
+   */
+  function setRate(uint256 _rate) public onlyOwner{
+    rate = _rate;
+  }
+  
+   /**
+   * @dev calculate the number of investors in crowdsale
+   */
   
   function investorsCount() public constant returns (uint) {
     return investors.length;
   }
-  
-   function releaseAfterMainSale() onlyOwner public {
-    require(release_date > now);
-    for (uint i = 0; i < investors.length; i++) {
-      address investor = investors[i];
-      if (tokenToClaim[investor] != 0) {
-         _deliverTokens(investor, tokenToClaim[investor]);
+
+    /**
+   * @dev Allow investors to withdraw their tokens after the mainsale is done
+   */
+
+  function withdrawAfterMainSale() isWhitelisted(msg.sender) public {
+    require(release_date < now);
+    require(isFinalized);
+    require(tokenToClaim[msg.sender] >= 0);
+    //for (uint i = 0; i < investors.length; i++) {
+      //address investor = investors[i];
+      if (tokenToClaim[msg.sender] > 0) {
+         _deliverTokens(msg.sender, tokenToClaim[msg.sender]);
+         tokenToClaim[msg.sender] = 0;
       }
-    }
+    //}
   }
   
-   function updateReleaseDate(uint256 _new_release_date) onlyOwner public{
-    require( _new_release_date > now &&  _new_release_date > release_date);
+    /**
+   * @dev Update the release date of purchased tokens
+   */
+
+  function updateReleaseDate(uint256 _new_release_date) onlyOwner public{
+    require( _new_release_date > now &&  _new_release_date != release_date);
      release_date = _new_release_date;
+    }
+    
+      /**
+   * @dev Update the close date of crowdsale
+   */
+
+    function adjustCloseDate(uint256 _new_close_date) onlyOwner public{
+    require(!isFinalized);
+    require( _new_close_date > now &&  _new_close_date > closingTime );
+     closingTime = _new_close_date;
     }
 }

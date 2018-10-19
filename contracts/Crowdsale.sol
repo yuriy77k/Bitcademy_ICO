@@ -24,7 +24,7 @@ contract Crowdsale is Ownable{
 
   // Address where funds are collected
   //address public wallet;
-   address public multisig_wallet = 0xc5384F3d5602eC5F52e50F28e650685E9c5F3016;
+
     
     //custom release date
    uint256 public release_date = 1556582400;
@@ -73,6 +73,9 @@ contract Crowdsale is Ownable{
     require(block.timestamp >= openingTime && block.timestamp <= closingTime);
     _;
   }
+
+
+ 
 
   bool public isFinalized = false;
 
@@ -139,19 +142,19 @@ contract Crowdsale is Ownable{
 
   /**
    * @param _rate No of tokens per ether
-   * @param multisig_wallet Address where collected funds will be forwarded to
+   * @param _multi_sig_wallet Address where collected funds will be forwarded to
    * @param _token Address of the token being sold
    */
-  constructor(uint256 _rate, BitcademyToken _token, uint256 _openingTime, uint256 _closingTime,address _tokenHolder,uint256 _goal) public {
+  constructor(uint256 _rate, BitcademyToken _token, uint256 _openingTime, uint256 _closingTime, address _tokenHolder, address _multi_sig_wallet, uint256 _goal) public {
     require(_rate > 0);
-    require(multisig_wallet != address(0));
+    require(_multi_sig_wallet != address(0));
     require(_token != address(0));
     require(_tokenHolder!= address(0));
     require(_openingTime >= block.timestamp);
     require(_closingTime >= _openingTime);
     require(_goal > 0);
 
-    vault = new RefundVault(multisig_wallet);
+    vault = new RefundVault(_multi_sig_wallet);
     goal = _goal;
     rate = _rate;
     token = _token;
@@ -179,6 +182,8 @@ contract Crowdsale is Ownable{
   function buyTokens(address _beneficiary) public payable {
 
     uint256 weiAmount = msg.value;
+    uint minimumPurchase = weiAmount.mul(rate).div(10**18);
+    require(minimumPurchase >= 100);
     uint256 refundWeiAmt = 0;
     uint256 tokens = 0;
     _preValidatePurchase(_beneficiary, weiAmount);
@@ -307,7 +312,12 @@ contract Crowdsale is Ownable{
     onlyWhileOpen
   {
     //_deliverTokens(_beneficiary, _tokenAmount);
+    if (tokenToClaim[_beneficiary] == 0){
     tokenToClaim[_beneficiary] = _tokenAmount;
+    }
+    else{
+      tokenToClaim[_beneficiary] = tokenToClaim[_beneficiary] + _tokenAmount;
+    }
   }
 
   /**
@@ -330,7 +340,7 @@ contract Crowdsale is Ownable{
    * @return Token price in weis
    */
   function _getTokenAmount(uint256 _weiAmount)
-    internal view returns (uint256, uint256)
+    internal  returns (uint256, uint256)
   {
     //remainingTokens = remainingTokens.sub(_tokenAmount);
     uint256 noOfTokens = 0;
@@ -348,9 +358,13 @@ contract Crowdsale is Ownable{
         noOfTokens = noOfTokens.add(tokensInCondition);
         remainingTokens = remainingTokens.sub(noOfTokens);
       }
+      else{
+        noOfTokens = tokensInCondition;
+        weiAmount = 0;
+      }
     }
 
-    if (remainingTokens < 300000000*(10**18) && remainingTokens >= 250000000*(10**18) && weiAmount > 0){
+    if (remainingTokens <= 300000000*(10**18) && remainingTokens > 250000000*(10**18) && weiAmount > 0){
 
       currentRate = currentRate.mul(100);
       currentRate = currentRate.div(125);
@@ -361,8 +375,12 @@ contract Crowdsale is Ownable{
         noOfTokens = noOfTokens.add(tokensInCondition);
         remainingTokens = remainingTokens.sub(noOfTokens);
       }
+      else{
+        noOfTokens = tokensInCondition;
+        weiAmount = 0;
+      }
     }
-    if (remainingTokens < 250000000*(10**18) && remainingTokens >= 200000000*(10**18) && weiAmount > 0 ){
+    if (remainingTokens <= 250000000*(10**18) && remainingTokens > 200000000*(10**18) && weiAmount > 0 ){
       currentRate = currentRate.mul(100);
       currentRate = currentRate.div(120);
       tokensInCondition = weiAmount.div(currentRate);
@@ -372,8 +390,12 @@ contract Crowdsale is Ownable{
         noOfTokens = noOfTokens.add(tokensInCondition);
         remainingTokens = remainingTokens.sub(noOfTokens);
       }
+      else{
+        noOfTokens = tokensInCondition;
+        weiAmount = 0;
+      }
     }
-    if (remainingTokens < 200000000*(10**18) && remainingTokens >= 150000000*(10**18) && weiAmount > 0 ){
+    if (remainingTokens <= 200000000*(10**18) && remainingTokens > 150000000*(10**18) && weiAmount > 0 ){
       currentRate = currentRate.mul(100);
       currentRate = currentRate.div(115);
       tokensInCondition = weiAmount.div(currentRate);
@@ -383,8 +405,12 @@ contract Crowdsale is Ownable{
         noOfTokens = noOfTokens.add(tokensInCondition);
         remainingTokens = remainingTokens.sub(noOfTokens);
       }
+      else{
+        noOfTokens = tokensInCondition;
+        weiAmount = 0;
+      }
     }
-     if (remainingTokens < 150000000*(10**18) && remainingTokens >= 100000000*(10**18) && weiAmount > 0){
+     if (remainingTokens <= 150000000*(10**18) && remainingTokens > 100000000*(10**18) && weiAmount > 0){
 
       currentRate = currentRate.mul(100);
       currentRate = currentRate.div(110);
@@ -395,9 +421,13 @@ contract Crowdsale is Ownable{
         noOfTokens = noOfTokens.add(tokensInCondition);
         remainingTokens = remainingTokens.sub(noOfTokens);
       }
+      else{
+        noOfTokens = tokensInCondition;
+        weiAmount = 0;
+      }
     }
 
-    if (remainingTokens < 100000000*(10**18) && remainingTokens >= 50000000*(10**18) ){
+    if (remainingTokens <= 100000000*(10**18) && remainingTokens > 50000000*(10**18) ){
       currentRate = currentRate.mul(100);
       currentRate = currentRate.div(105);
       tokensInCondition = weiAmount.div(currentRate);
@@ -407,12 +437,20 @@ contract Crowdsale is Ownable{
         noOfTokens = noOfTokens.add(tokensInCondition);
         remainingTokens = remainingTokens.sub(noOfTokens);
       }
+      else{
+        noOfTokens = tokensInCondition;
+        weiAmount = 0;
+      }
     }
-    if(remainingTokens < 50000000*(10**18)){
+    if(remainingTokens <= 50000000*(10**18)){
       tokensInCondition = weiAmount.div(currentRate);
       if(tokensInCondition > remainingTokens) {
         noOfTokens = remainingTokens;
         weiAmount = weiAmount.sub(noOfTokens.mul(currentRate));
+      }
+      else{
+        noOfTokens = tokensInCondition;
+        weiAmount = 0;
       }
     }
     return (noOfTokens, weiAmount);
@@ -432,26 +470,46 @@ contract Crowdsale is Ownable{
     rate = _rate;
   }
   
+  /**
+   * @dev calculate the number of investors in crowdsale
+   */
+  
   function investorsCount() public constant returns (uint) {
     return investors.length;
   }
   
-  function releaseAfterMainSale() onlyOwner public {
-    require(release_date > now);
-    for (uint i = 0; i < investors.length; i++) {
-      address investor = investors[i];
-      if (tokenToClaim[investor] != 0) {
-         _deliverTokens(investor, tokenToClaim[investor]);
+    /**
+   * @dev allow investors to withdraw their tokens after the mainsale is done
+   */
+
+  function withdrawAfterMainSale() isWhitelisted(msg.sender) public {
+    require(release_date < now);
+    require(isFinalized);
+    require(tokenToClaim[msg.sender] >= 0);
+    //for (uint i = 0; i < investors.length; i++) {
+      //address investor = investors[i];
+      if (tokenToClaim[msg.sender] > 0) {
+         _deliverTokens(msg.sender, tokenToClaim[msg.sender]);
+         tokenToClaim[msg.sender] = 0;
       }
-    }
+    //}
   }
   
+    /**
+   * @dev Update the release date of purchased tokens
+   */
+
   function updateReleaseDate(uint256 _new_release_date) onlyOwner public{
     require( _new_release_date > now &&  _new_release_date != release_date);
      release_date = _new_release_date;
     }
     
+      /**
+   * @dev Update the close date of crowdsale
+   */
+
     function adjustCloseDate(uint256 _new_close_date) onlyOwner public{
+    require(!isFinalized);
     require( _new_close_date > now &&  _new_close_date > closingTime );
      closingTime = _new_close_date;
     }

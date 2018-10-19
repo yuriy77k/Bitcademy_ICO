@@ -19,6 +19,7 @@ contract BitcademyVesting is Ownable {
   uint256 public start;
   uint256 public duration;
   uint256 public interval;
+  uint    public countRelease = 0;
 
   uint256 public constant ReleaseCap = 150000000000000000000000000;
 
@@ -60,12 +61,14 @@ contract BitcademyVesting is Ownable {
 
   function addMember(address _member) public onlyOwner {
       require(members[_member] == false);
+      require(countRelease <= 0);
       members[_member] = true;
       noOfMembers = noOfMembers.add(1);
   }
 
   function removeMember(address _member) public onlyOwner {
       require(members[_member] == true);
+      require(countRelease <= 0);
       members[_member] = false;
       noOfMembers = noOfMembers.sub(1);
   }
@@ -75,7 +78,10 @@ contract BitcademyVesting is Ownable {
    * @param _token BitcademyToken token which is being vested
    */
   function release(BitcademyToken _token, address _member) onlyMember(_member) public {
-    uint256 unreleased = releasableAmount(_token);
+    require (block.timestamp > cliff);
+     uint256 currentBalance = _token.balanceOf(this);
+    uint256 totalBalance = currentBalance.add(released);
+    uint256 unreleased = totalBalance.sub(released);
 
     require(unreleased > 0);
 
@@ -88,6 +94,7 @@ contract BitcademyVesting is Ownable {
      _token.transfer(_member, unreleased);
      numReleases[_member] = numReleases[_member].add(1);
      nextRelease[_member] = interval.add(cliff).add(interval);
+     countRelease = countRelease + 1;
    }
    else if (numReleases[_member] > 0){
      require(block.timestamp >= nextRelease[_member] );
@@ -97,6 +104,7 @@ contract BitcademyVesting is Ownable {
      _token.transfer(_member, unreleased);
      numReleases[_member] = numReleases[_member].add(1);
      nextRelease[_member] = nextRelease[_member].add(interval);
+     countRelease = countRelease + 1;
    }
 
     emit Released(unreleased);
@@ -106,15 +114,15 @@ contract BitcademyVesting is Ownable {
    * @dev Calculates the amount that has already vested but hasn't been released yet.
    * @param _token BitcademyToken token which is being vested
    */
-  function releasableAmount(BitcademyToken _token) public view returns (uint256) {
-    return vestedAmount(_token).sub(released);
-  }
+  /** function releasableAmount(BitcademyToken _token) public view returns (uint256) {
+    //return vestedAmount(_token).sub(released);
+  } */
 
   /**
    * @dev Calculates the amount that has already vested.
    * @param _token BitcademyToken token which is being vested
    */
-  function vestedAmount(BitcademyToken _token) public view returns (uint256) {
+  /** function vestedAmount(BitcademyToken _token) public view returns (uint256) {
     uint256 currentBalance = _token.balanceOf(this);
     uint256 totalBalance = currentBalance.add(released);
 
@@ -125,5 +133,5 @@ contract BitcademyVesting is Ownable {
     } else {
       return totalBalance.mul(block.timestamp.sub(start)).div(duration);
     }
-  }
+  } */
 }
