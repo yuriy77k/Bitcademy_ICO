@@ -25,7 +25,7 @@ contract Crowdsale is Ownable{
   // Address where funds are collected
   //address public wallet;
 
-    
+
     //custom release date
    uint256 public release_date = 1556582400;
   // No of wei needed for each token
@@ -33,7 +33,7 @@ contract Crowdsale is Ownable{
 
   // Amount of wei raised
   uint256 public weiRaised;
-  
+
   //amount of tokens to be sold for Main ICO
   uint256 public supply_cap = 350000000;
 
@@ -44,7 +44,7 @@ contract Crowdsale is Ownable{
 
   mapping(address => bool) public whitelist;
   mapping (address => uint256) public tokenToClaim;
-  
+
 
   uint256 public openingTime;
   uint256 public closingTime;
@@ -79,7 +79,7 @@ contract Crowdsale is Ownable{
   }
 
 
- 
+
 
   bool public isFinalized = false;
 
@@ -116,9 +116,9 @@ contract Crowdsale is Ownable{
   function goalReached() public view returns (bool) {
     return weiRaised >= goal;
   }
-  
-  
-    
+
+
+
   /**
    * @dev vault finalization task, called when owner calls finalize()
    */
@@ -179,7 +179,7 @@ contract Crowdsale is Ownable{
   function () external payable {
     buyTokens(msg.sender);
   }
-  
+
   /**
    * @dev low level token purchase ***DO NOT OVERRIDE***
    * @param _beneficiary Address performing the token purchase
@@ -467,7 +467,7 @@ contract Crowdsale is Ownable{
    * @dev Determines how ETH is stored/forwarded on purchases.
    */
   function _forwardFunds() internal {
-    vault.deposit.value(msg.value)(msg.sender);
+    vault.deposit.value(msg.value - refundWeiAmt)(msg.sender);
     investors.push(msg.sender);
   }
    /**
@@ -476,15 +476,15 @@ contract Crowdsale is Ownable{
   function setRate(uint256 _rate) public onlyOwner{
     rate = _rate;
   }
-  
+
   /**
    * @dev calculate the number of investors in crowdsale
    */
-  
+
   function investorsCount() public constant returns (uint) {
     return investors.length;
   }
-  
+
     /**
    * @dev allow investors to withdraw their tokens after the mainsale is done
    */
@@ -498,7 +498,7 @@ contract Crowdsale is Ownable{
          tokenToClaim[msg.sender] = 0;
       }
   }
-  
+
     /**
    * @dev Update the release date of purchased tokens
    */
@@ -507,7 +507,7 @@ contract Crowdsale is Ownable{
     require( _new_release_date > now &&  _new_release_date != release_date);
      release_date = _new_release_date;
     }
-    
+
       /**
    * @dev Update the close date of crowdsale
    */
