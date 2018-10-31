@@ -159,7 +159,7 @@ contract Crowdsale is Ownable{
    * @param _multi_sig_wallet Address where collected funds will be forwarded to
    * @param _token Address of the token being sold
    */
-  constructor(uint256 _rate, BitcademyToken _token, uint256 _openingTime, uint256 _closingTime, address _tokenHolder, address _multi_sig_wallet, uint256 _goal) public {
+  constructor(uint256 _rate, BitcademyToken _token, uint256 _openingTime, uint256 _closingTime, address _multi_sig_wallet, uint256 _goal) public {
     require(_rate > 0);
     require(_multi_sig_wallet != address(0));
     require(_token != address(0));
