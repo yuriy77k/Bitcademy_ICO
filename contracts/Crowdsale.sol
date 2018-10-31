@@ -110,7 +110,7 @@ contract Crowdsale is Ownable{
   }
 
   /**
-   * @dev Investors can claim refunds here if they are  blacklisted
+   * @dev Investors can claim refunds here if the blacklisted
    */
   function blacklistClaimRefund() public {
     require(isFinalized);
