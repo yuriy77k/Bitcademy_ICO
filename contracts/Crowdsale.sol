@@ -169,10 +169,10 @@ contract Crowdsale is Ownable{
     require(_goal > 0);
 
     vault = new RefundVault(_multi_sig_wallet);
+    tokenHolder = msg.sender;
     goal = _goal;
     rate = _rate;
     token = _token;
-    tokenHolder = _tokenHolder;
     openingTime = _openingTime;
     closingTime = _closingTime;
     token.approve(tokenHolder, supply_cap.mul(10**18));
