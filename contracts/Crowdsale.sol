@@ -110,7 +110,7 @@ contract Crowdsale is Ownable{
   }
 
   /**
-   * @dev Investors can claim refunds here if the investor is blacklisted
+   * @dev Investors can claim refunds here if the blacklisted
    */
   function blacklistClaimRefund() public {
     require(isFinalized);
@@ -163,16 +163,15 @@ contract Crowdsale is Ownable{
     require(_rate > 0);
     require(_multi_sig_wallet != address(0));
     require(_token != address(0));
-    require(_tokenHolder!= address(0));
     require(_openingTime >= block.timestamp);
     require(_closingTime >= _openingTime);
     require(_goal > 0);
 
     vault = new RefundVault(_multi_sig_wallet);
-    tokenHolder = msg.sender;
     goal = _goal;
     rate = _rate;
     token = _token;
+    tokenHolder = msg.sender;
     openingTime = _openingTime;
     closingTime = _closingTime;
     token.approve(tokenHolder, supply_cap.mul(10**18));
