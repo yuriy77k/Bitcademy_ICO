@@ -435,7 +435,7 @@
         "id": 2,
         "nodeType": "ImportDirective",
         "scope": 88,
-        "sourceUnit": 2268,
+        "sourceUnit": 1647,
         "src": "28:71:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -449,10 +449,10 @@
               "id": 3,
               "name": "PausableToken",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 2267,
+              "referencedDeclaration": 1646,
               "src": "130:13:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_PausableToken_$2267",
+                "typeIdentifier": "t_contract$_PausableToken_$1646",
                 "typeString": "contract PausableToken"
               }
             },
@@ -462,13 +462,13 @@
           }
         ],
         "contractDependencies": [
-          1994,
-          2090,
-          2133,
-          2165,
-          2267,
-          2514,
-          1814
+          1193,
+          1373,
+          1469,
+          1512,
+          1544,
+          1646,
+          1893
         ],
         "contractKind": "contract",
         "documentation": null,
@@ -476,13 +476,13 @@
         "id": 87,
         "linearizedBaseContracts": [
           87,
-          2267,
-          1814,
-          1994,
-          2514,
-          2090,
-          2133,
-          2165
+          1646,
+          1193,
+          1373,
+          1893,
+          1469,
+          1512,
+          1544
         ],
         "name": "BitcademyToken",
         "nodeType": "ContractDefinition",
@@ -769,10 +769,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        2532,
-                        2533
+                        1911,
+                        1912
                       ],
-                      "referencedDeclaration": 2532,
+                      "referencedDeclaration": 1911,
                       "src": "406:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -811,7 +811,7 @@
                       "name": "totalSupply_",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2009,
+                      "referencedDeclaration": 1388,
                       "src": "444:12:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -962,7 +962,7 @@
                         "name": "balances",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2007,
+                        "referencedDeclaration": 1386,
                         "src": "498:8:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
@@ -1063,7 +1063,7 @@
                                   "name": "totalSupply_",
                                   "nodeType": "Identifier",
                                   "overloadedDeclarations": [],
-                                  "referencedDeclaration": 2009,
+                                  "referencedDeclaration": 1388,
                                   "src": "528:12:0",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_uint256",
@@ -1077,7 +1077,7 @@
                                 "lValueRequested": false,
                                 "memberName": "mul",
                                 "nodeType": "MemberAccess",
-                                "referencedDeclaration": 1849,
+                                "referencedDeclaration": 1228,
                                 "src": "528:16:0",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -1119,7 +1119,7 @@
                         "lValueRequested": false,
                         "memberName": "div",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 1863,
+                        "referencedDeclaration": 1242,
                         "src": "527:26:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -1166,7 +1166,7 @@
                         "name": "balances",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2007,
+                        "referencedDeclaration": 1386,
                         "src": "565:8:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
@@ -1211,7 +1211,7 @@
                             "name": "balances",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2007,
+                            "referencedDeclaration": 1386,
                             "src": "623:8:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
@@ -1374,7 +1374,7 @@
                         "lValueRequested": false,
                         "memberName": "sub",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 1883,
+                        "referencedDeclaration": 1262,
                         "src": "586:36:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -1415,7 +1415,7 @@
                         "name": "this",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2558,
+                        "referencedDeclaration": 1937,
                         "src": "670:4:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_contract$_BitcademyToken_$87",
@@ -1441,7 +1441,7 @@
                         "name": "totalSupply_",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2009,
+                        "referencedDeclaration": 1388,
                         "src": "684:12:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1468,7 +1468,7 @@
                       "name": "Transfer",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2164,
+                      "referencedDeclaration": 1543,
                       "src": "661:8:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$__$",
@@ -1503,7 +1503,7 @@
                         "name": "this",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2558,
+                        "referencedDeclaration": 1937,
                         "src": "718:4:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_contract$_BitcademyToken_$87",
@@ -1531,7 +1531,7 @@
                           "name": "balances",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 2007,
+                          "referencedDeclaration": 1386,
                           "src": "739:8:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
@@ -1583,7 +1583,7 @@
                       "name": "Transfer",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2164,
+                      "referencedDeclaration": 1543,
                       "src": "709:8:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$__$",
@@ -1724,7 +1724,7 @@
         "id": 2,
         "nodeType": "ImportDirective",
         "scope": 88,
-        "sourceUnit": 2268,
+        "sourceUnit": 1647,
         "src": "28:71:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1738,10 +1738,10 @@
               "id": 3,
               "name": "PausableToken",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 2267,
+              "referencedDeclaration": 1646,
               "src": "130:13:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_PausableToken_$2267",
+                "typeIdentifier": "t_contract$_PausableToken_$1646",
                 "typeString": "contract PausableToken"
               }
             },
@@ -1751,13 +1751,13 @@
           }
         ],
         "contractDependencies": [
-          1994,
-          2090,
-          2133,
-          2165,
-          2267,
-          2514,
-          1814
+          1193,
+          1373,
+          1469,
+          1512,
+          1544,
+          1646,
+          1893
         ],
         "contractKind": "contract",
         "documentation": null,
@@ -1765,13 +1765,13 @@
         "id": 87,
         "linearizedBaseContracts": [
           87,
-          2267,
-          1814,
-          1994,
-          2514,
-          2090,
-          2133,
-          2165
+          1646,
+          1193,
+          1373,
+          1893,
+          1469,
+          1512,
+          1544
         ],
         "name": "BitcademyToken",
         "nodeType": "ContractDefinition",
@@ -2058,10 +2058,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        2532,
-                        2533
+                        1911,
+                        1912
                       ],
-                      "referencedDeclaration": 2532,
+                      "referencedDeclaration": 1911,
                       "src": "406:7:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -2100,7 +2100,7 @@
                       "name": "totalSupply_",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2009,
+                      "referencedDeclaration": 1388,
                       "src": "444:12:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -2251,7 +2251,7 @@
                         "name": "balances",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2007,
+                        "referencedDeclaration": 1386,
                         "src": "498:8:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
@@ -2352,7 +2352,7 @@
                                   "name": "totalSupply_",
                                   "nodeType": "Identifier",
                                   "overloadedDeclarations": [],
-                                  "referencedDeclaration": 2009,
+                                  "referencedDeclaration": 1388,
                                   "src": "528:12:0",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_uint256",
@@ -2366,7 +2366,7 @@
                                 "lValueRequested": false,
                                 "memberName": "mul",
                                 "nodeType": "MemberAccess",
-                                "referencedDeclaration": 1849,
+                                "referencedDeclaration": 1228,
                                 "src": "528:16:0",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -2408,7 +2408,7 @@
                         "lValueRequested": false,
                         "memberName": "div",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 1863,
+                        "referencedDeclaration": 1242,
                         "src": "527:26:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -2455,7 +2455,7 @@
                         "name": "balances",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2007,
+                        "referencedDeclaration": 1386,
                         "src": "565:8:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
@@ -2500,7 +2500,7 @@
                             "name": "balances",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 2007,
+                            "referencedDeclaration": 1386,
                             "src": "623:8:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
@@ -2663,7 +2663,7 @@
                         "lValueRequested": false,
                         "memberName": "sub",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 1883,
+                        "referencedDeclaration": 1262,
                         "src": "586:36:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -2704,7 +2704,7 @@
                         "name": "this",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2558,
+                        "referencedDeclaration": 1937,
                         "src": "670:4:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_contract$_BitcademyToken_$87",
@@ -2730,7 +2730,7 @@
                         "name": "totalSupply_",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2009,
+                        "referencedDeclaration": 1388,
                         "src": "684:12:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -2757,7 +2757,7 @@
                       "name": "Transfer",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2164,
+                      "referencedDeclaration": 1543,
                       "src": "661:8:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$__$",
@@ -2792,7 +2792,7 @@
                         "name": "this",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 2558,
+                        "referencedDeclaration": 1937,
                         "src": "718:4:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_contract$_BitcademyToken_$87",
@@ -2820,7 +2820,7 @@
                           "name": "balances",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 2007,
+                          "referencedDeclaration": 1386,
                           "src": "739:8:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
@@ -2872,7 +2872,7 @@
                       "name": "Transfer",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2164,
+                      "referencedDeclaration": 1543,
                       "src": "709:8:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$__$",
@@ -2999,5 +2999,5 @@
     }
   },
   "schemaVersion": "2.0.1",
-  "updatedAt": "2018-10-31T17:17:30.832Z"
+  "updatedAt": "2018-10-31T21:25:08.913Z"
 }
