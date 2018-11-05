@@ -36,14 +36,12 @@ contract Crowdsale is Ownable{
 
 
   //amount of tokens to be sold for Private Sale preICO
-  uint256 public supply_cap = 150000000;
+  uint256 public supply_cap = 150000000*(10**18);
   // maximum token selleable without bonuses
-  uint256 public minimumTokens = 93750000;
-
-
+  uint256 public minimumTokens = 93750000*(10**18);
   address[] public investors;
-  // Save Token Holder addresses
-  address public tokenHolder;
+
+
 
   mapping(address => bool) public whitelist;
   mapping (address => uint256) public tokenToClaim;
@@ -82,6 +80,7 @@ contract Crowdsale is Ownable{
     require(block.timestamp >= openingTime && block.timestamp <= closingTime);
     _;
   }
+
 
 
 
@@ -160,9 +159,9 @@ contract Crowdsale is Ownable{
   /**
    * @param _rate No of tokens per ether
    * @param _multi_sig_wallet Address where collected funds will be forwarded to
-   * @param _token Address of the token being sold
+   * @param _goal the  token soft cap
    */
-  constructor(uint256 _rate, BitcademyToken _token, uint256 _openingTime, uint256 _closingTime,address _multi_sig_wallet, uint256 _goal) public {
+  constructor(uint256 _rate , BitcademyToken _token, uint256 _openingTime, uint256 _closingTime, address _multi_sig_wallet, uint256 _goal) public {
     require(_rate > 0);
     require(_multi_sig_wallet != address(0));
     require(_token != address(0));
@@ -174,11 +173,8 @@ contract Crowdsale is Ownable{
     goal = _goal;
     rate = _rate;
     token = _token;
-    tokenHolder = msg.sender;
     openingTime = _openingTime;
     closingTime = _closingTime;
-    token.approve(tokenHolder, supply_cap.mul(10**18));
-    remainingTokens = token.allowance(tokenHolder , address(this));
 }
   // -----------------------------------------
   // Crowdsale external interface
@@ -313,7 +309,7 @@ contract Crowdsale is Ownable{
   )
     internal
   {
-    token.transferFrom(tokenHolder,_beneficiary, _tokenAmount);
+    token.transfer(_beneficiary, _tokenAmount);
 
   }
 
@@ -361,7 +357,7 @@ contract Crowdsale is Ownable{
   function _getTokenAmount(uint256 _weiAmount)
     internal  returns (uint256, uint256)
   {
-    //remainingTokens = remainingTokens.sub(_tokenAmount);
+    remainingTokens =  token.balanceOf(this);
     uint256 noOfTokens = 0;
     uint256 tokensInCondition = 0;
     uint256 weiAmount  = _weiAmount;
@@ -399,7 +395,8 @@ contract Crowdsale is Ownable{
    * @dev Set the exchange rate of the token
    */
   function setRate(uint256 _rate) public onlyOwner{
-    rate = _rate.mul(38).div(1000);
+    require(_rate > 0);
+    rate = _rate;
   }
 
    /**

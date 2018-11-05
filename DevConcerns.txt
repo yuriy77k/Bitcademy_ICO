@@ -1,0 +1,67 @@
+Issue Raised by Auditor:
+3.4. Token Conversion and Bonus Computation
+Severity: medium
+Description
+
+1.The purpose of rate is not clear. In one place its "No of wei needed for each token", but in others "No of tokens per ether" what is the reverse value.
+
+2. To get the token amount (using _getTokenAmount) from the ether sent to Crowdsale contracts, _weiAmount is divided by rate that is updated every 3 hours by the project team using setRate.
+
+3. The token decimals is set to 18 same as ETH decimals, and the price in USD of 1 token is set to be 0.038 USD At the moment of writing 1 ETH should provide the investors with ~5947 tokens without taking into account the bonuses, but since _weiAmount is divided and not multiplied by a certain rate the expected tokens will never be provided. For example if rate is set to the minimum value possible (rate = 1), then an investor that send 1 ETH will receive 1 token.
+
+4. _getTokenAmount function member of PreICOBitcademyGold contract use the exact same _getTokenAmount function as Crowdsale contract, knowing that the presale should provide 60% bonus, than the implementation of the highlighted function is wrong.
+
+
+Developers Concerns
+
+Issue 3.4.3: I request the auditor to provide evidence of the same (A transaction Hash showing a Transaction proofing that the issue is valid)
+
+Issue 3.4.4: The issue is not valid since both implementation PreICOBitcademyGold and Crowdsale in  are different.
+
+
+
+3.10. Token Approval
+Severity: Minor observation
+Description
+
+The constructor contain the following line for both Crowdsale and PreICOBitcademyGold contracts:
+
+    token.approve(address(this), supply_cap.mul(10**18));
+
+The contract address is approving to itself supply_cap value of tokens to be spent, this line doesn't add anything to the contract. The approval of tokens to be spent by the contract for the ICO should be done by tokenHolder address.
+Code snippet
+
+Developer Remarks:
+The issue is fixed but awaiting confirmation from the Auditor
+In the constructor :
+The tokenHolder is set to msg.sender
+
+token.approve(tokenHolder, supply_cap.mul(10**18));
+remainingTokens = token.allowance(tokenHolder , address(this));
+
+3.11. The investor will receive total bonuses for 2 rounds if the number of tokens exceeds the remaining amount in this round.
+Severity: medium
+Description
+
+If the number of tokens exceeds the remaining amount in this round then in next condition block will use previous price with bonus. And the bonus of coming round will be added to this price.
+
+if (remainingTokens < 300000000*(10**18) && remainingTokens >= 250000000*(10**18) && weiAmount > 0){
+  currentRate = currentRate.mul(100);
+  currentRate = currentRate.div(125); // plus a 25 percent bonus.
+  // ...
+}
+
+if (remainingTokens < 250000000*(10**18) && remainingTokens >= 200000000*(10**18) && weiAmount > 0 ){
+  currentRate = currentRate.mul(100);
+  currentRate = currentRate.div(120); // plus a 20 percent bonus. 55 percent bonus at all.
+  // ...
+}
+
+
+In this case investor will get 55 percent bonus instead 20.
+
+
+Developer Remarks:
+The issue should be fixed by setting:
+currentRate to rate for each if condition block.
+currentRate = rate;

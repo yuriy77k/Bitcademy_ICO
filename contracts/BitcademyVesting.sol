@@ -20,9 +20,7 @@ contract BitcademyVesting is Ownable {
   uint256 public duration;
   uint256 public interval;
   uint    public countRelease = 0;
-
-  uint256 public constant ReleaseCap = 150000000000000000000000000;
-
+  uint256 public ReleaseCap = 150000000000000000000000000;
   mapping (address=>bool) public members;
   mapping (address =>uint) public numReleases;
   mapping (address => uint) public nextRelease;
@@ -60,6 +58,7 @@ contract BitcademyVesting is Ownable {
   }
 
   function addMember(address _member) public onlyOwner {
+      require(_member != address(0));
       require(members[_member] == false);
       require(countRelease <= 0);
       members[_member] = true;
