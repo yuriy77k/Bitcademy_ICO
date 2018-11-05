@@ -39,8 +39,6 @@ contract Crowdsale is Ownable{
   uint256 public supply_cap = 150000000*(10**18);
   // maximum token selleable without bonuses
   uint256 public minimumTokens = 93750000*(10**18);
-
-
   address[] public investors;
 
 
