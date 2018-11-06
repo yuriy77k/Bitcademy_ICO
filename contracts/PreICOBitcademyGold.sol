@@ -367,7 +367,7 @@ contract Crowdsale is Ownable{
     uint256 tokensMinusBonus = 0;
     require(tokenSoldExcludeBonus < 93750000*(10**18));
      currentRate = rate;
-      tokensMinusBonus = weiAmount.div(currentRate);
+      tokensMinusBonus = (weiAmount.div(currentRate))*(10**18);
       tokenSoldExcludeBonus = tokenSoldExcludeBonus.add(tokensMinusBonus);
       currentRate = rate.mul(10);
       currentRate = rate.div(16);
