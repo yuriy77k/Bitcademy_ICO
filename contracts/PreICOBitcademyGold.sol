@@ -39,6 +39,8 @@ contract Crowdsale is Ownable{
   uint256 public supply_cap = 150000000*(10**18);
   // maximum token selleable without bonuses
   uint256 public minimumTokens = 93750000*(10**18);
+
+
   address[] public investors;
 
 
@@ -365,11 +367,11 @@ contract Crowdsale is Ownable{
     uint256 tokensMinusBonus = 0;
     require(tokenSoldExcludeBonus < 93750000*(10**18));
      currentRate = rate;
-      tokensMinusBonus = weiAmount.div(currentRate);
+      tokensMinusBonus = (weiAmount.div(currentRate))*(10**18);
       tokenSoldExcludeBonus = tokenSoldExcludeBonus.add(tokensMinusBonus);
       currentRate = rate.mul(10);
       currentRate = rate.div(16);
-      tokensInCondition = weiAmount.div(currentRate);
+      tokensInCondition = (weiAmount.div(currentRate))*(10**18);
       weiAmount = weiAmount.sub(tokensInCondition.mul(currentRate));
       noOfTokens = noOfTokens.add(tokensInCondition);
       remainingTokens = remainingTokens.sub(tokensInCondition);
