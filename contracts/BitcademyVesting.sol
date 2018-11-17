@@ -44,7 +44,13 @@ contract BitcademyVesting is Ownable {
   )
     public
   {
+
+    require(_start > now);
+    require(_cliff > 0);
+    require(_duration > 0);
+    require(_interval > 0);
     require(_cliff <= _duration);
+
 
     duration = _duration;
     cliff = _start.add(_cliff);
