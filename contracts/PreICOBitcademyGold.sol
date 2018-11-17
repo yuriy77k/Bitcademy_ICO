@@ -396,8 +396,8 @@ contract Crowdsale is Ownable{
      currentRate = rate;
       tokensMinusBonus = (weiAmount.div(currentRate))*(10**18);
       tokenSoldExcludeBonus = tokenSoldExcludeBonus.add(tokensMinusBonus);
-      currentRate = rate.mul(10);
-      currentRate = rate.div(16);
+      currentRate = currentRate.mul(10);
+      currentRate = currentRate.div(16);
       tokensInCondition = (weiAmount.div(currentRate))*(10**18);
       weiAmount = weiAmount.sub(tokensInCondition.mul(currentRate));
       noOfTokens = noOfTokens.add(tokensInCondition);
