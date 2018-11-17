@@ -42,12 +42,13 @@ contract Crowdsale is Ownable{
 
 
   address[] public investors;
+  address[] public blacklist;
 
 
 
   mapping(address => bool) public whitelist;
+  mapping(address => bool) public blacklisted;
   mapping (address => uint256) public tokenToClaim;
-  //mapping(address => uint256) public salesTimes;
 // amount invested by the investor
    mapping (address => uint256) public investedAmount;
 
@@ -65,7 +66,8 @@ contract Crowdsale is Ownable{
 
   // refund vault used to hold funds while crowdsale is running
   RefundVault public vault;
-
+ // refund amount for the blacklisted users
+  uint256 public refundBlackListedAmount;
   /**
    * @dev Reverts if beneficiary is not whitelisted. Can be used when extending this contract.
    */
@@ -83,7 +85,13 @@ contract Crowdsale is Ownable{
     _;
   }
 
-
+  /**
+   * @dev Reverts if the beneficiary is not blacklisted.
+   */
+  modifier onlyBlacklisted(address _beneficiary) {
+    require(blacklisted[_beneficiary]);
+    _;
+  }
 
 
   bool public isFinalized = false;
@@ -117,10 +125,11 @@ contract Crowdsale is Ownable{
   /**
    * @dev  Investors can claim refunds here if they are  blacklisted
    */
-  function blacklistClaimRefund() public {
+  function blacklistClaimRefund() onlyBlacklisted(msg.sender) public  {
     require(isFinalized);
     require(tokenToClaim[msg.sender] > 0);
     vault.refund(msg.sender);
+    tokenToClaim[msg.sender] = 0;
   }
 
   /**
@@ -138,6 +147,16 @@ contract Crowdsale is Ownable{
    */
   function finalization() internal {
     if (goalReached()) {
+      if (refundBlackListedAmount > 0){
+        for (uint i = 0; i < blacklist.length; i++) {
+          address blacklistedInvestor = blacklist[i];
+          require(tokenToClaim[blacklistedInvestor] > 0);
+          if (vault.deposited(blacklistedInvestor) != 0) {
+           vault.refund(blacklistedInvestor);
+           tokenToClaim[blacklistedInvestor] = 0;
+         }
+        }
+      }
       vault.close();
     } else {
       vault.enableRefunds();
@@ -237,6 +256,7 @@ contract Crowdsale is Ownable{
    * @param _beneficiary Address to be added to the whitelist
    */
   function addToWhitelist(address _beneficiary) external onlyOwner {
+    require(!isFinalized);
     whitelist[_beneficiary] = true;
   }
 
@@ -245,6 +265,7 @@ contract Crowdsale is Ownable{
    * @param _beneficiaries Addresses to be added to the whitelist
    */
   function addManyToWhitelist(address[] _beneficiaries) external onlyOwner {
+    require(!isFinalized);
     for (uint256 i = 0; i < _beneficiaries.length; i++) {
       whitelist[_beneficiaries[i]] = true;
     }
@@ -255,7 +276,13 @@ contract Crowdsale is Ownable{
    * @param _beneficiary Address to be removed to the whitelist
    */
   function removeFromWhitelist(address _beneficiary) external onlyOwner {
+    require(!isFinalized);
     whitelist[_beneficiary] = false;
+    if (tokenToClaim[_beneficiary] > 0){
+      refundBlackListedAmount = refundBlackListedAmount.add(tokenToClaim[_beneficiary]);
+      blacklist.push(_beneficiary);
+    }
+    blacklisted[_beneficiary] = true;
   }
 
   /**
@@ -386,12 +413,12 @@ contract Crowdsale is Ownable{
     vault.deposit.value(_value)(msg.sender);
     if (investedAmount[msg.sender] == 0){
       investedAmount[msg.sender] = _value;
+      investors.push(msg.sender);
     }
     else {
       investedAmount[msg.sender] = investedAmount[msg.sender].add(_value);
+      investors.push(msg.sender);
     }
-
-    investors.push(msg.sender);
   }
    /**
    * @dev Set the exchange rate of the token
@@ -429,7 +456,7 @@ contract Crowdsale is Ownable{
    */
 
   function updateReleaseDate(uint256 _new_release_date) onlyOwner public{
-    require( _new_release_date > now &&  _new_release_date != release_date);
+    require(_new_release_date > now &&  _new_release_date != release_date);
      release_date = _new_release_date;
     }
 
@@ -439,7 +466,14 @@ contract Crowdsale is Ownable{
 
     function adjustCloseDate(uint256 _new_close_date) onlyOwner public{
     require(!isFinalized);
-    require( _new_close_date > now &&  _new_close_date > closingTime );
+    require(_new_close_date > now &&  _new_close_date > closingTime );
      closingTime = _new_close_date;
+    }
+
+    /**
+ * @dev get goal amount
+ */
+    function getGoal() onlyOwner public returns (uint256){
+    return goal;
     }
 }
