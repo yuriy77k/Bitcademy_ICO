@@ -12,7 +12,7 @@ contract BitcademyToken is PausableToken {
     totalSupply_ = (_initial_supply*(10**decimals));
     balances[_vestingAddress]  = (totalSupply_.mul(15)).div(100);
     balances[_reserve] = (_initial_supply*(10**decimals)).sub(balances[_vestingAddress]);
-    emit Transfer(this,_reserve,totalSupply_);
+    emit Transfer(this,_reserve,balances[_reserve]);
     emit Transfer(this,_vestingAddress,balances[_vestingAddress]);
   }
 }
