@@ -396,7 +396,7 @@ contract Crowdsale is Ownable{
       currentRate = rate;
       currentRate = currentRate.mul(10);
       currentRate = currentRate.div(13);
-      tokensInCondition = (weiAmount.div(currentRate))*(10**18);
+      tokensInCondition = currentRate*(10**18);
       if(tokensInCondition > remainingTokens.sub(300000000*(10**18))){
         tokensInCondition = remainingTokens.sub(300000000*(10**18));
         weiAmount = weiAmount.sub(tokensInCondition.mul(currentRate));
@@ -414,7 +414,7 @@ contract Crowdsale is Ownable{
       currentRate = rate;
       currentRate = currentRate.mul(100);
       currentRate = currentRate.div(125);
-      tokensInCondition = (weiAmount.div(currentRate))*(10**18);
+      tokensInCondition = currentRate*(10**18);
       if(tokensInCondition > remainingTokens.sub(250000000*(10**18))){
         tokensInCondition = remainingTokens.sub(250000000*(10**18));
         weiAmount = weiAmount.sub(tokensInCondition.mul(currentRate));
@@ -431,7 +431,7 @@ contract Crowdsale is Ownable{
       currentRate = rate;
       currentRate = currentRate.mul(100);
       currentRate = currentRate.div(120);
-      tokensInCondition = (weiAmount.div(currentRate))*(10**18);
+      tokensInCondition = currentRate*(10**18);
       if(tokensInCondition > remainingTokens.sub(200000000*(10**18))){
         tokensInCondition = remainingTokens.sub(200000000*(10**18));
         weiAmount = weiAmount.sub(tokensInCondition.mul(currentRate));
@@ -448,7 +448,7 @@ contract Crowdsale is Ownable{
       currentRate = rate;
       currentRate = currentRate.mul(100);
       currentRate = currentRate.div(115);
-      tokensInCondition = (weiAmount.div(currentRate))*(10**18);
+      tokensInCondition = currentRate*(10**18);
       if(tokensInCondition > remainingTokens.sub(150000000*(10**18))){
         tokensInCondition = remainingTokens.sub(150000000*(10**18));
         weiAmount = weiAmount.sub(tokensInCondition.mul(currentRate));
@@ -465,7 +465,7 @@ contract Crowdsale is Ownable{
       currentRate = rate;
       currentRate = currentRate.mul(100);
       currentRate = currentRate.div(110);
-      tokensInCondition = (weiAmount.div(currentRate))*(10**18);
+      tokensInCondition = currentRate*(10**18);
       if(tokensInCondition > remainingTokens.sub(100000000*(10**18))){
         tokensInCondition = remainingTokens.sub(100000000*(10**18));
         weiAmount = weiAmount.sub(tokensInCondition.mul(currentRate));
@@ -483,7 +483,7 @@ contract Crowdsale is Ownable{
       currentRate = rate;
       currentRate = currentRate.mul(100);
       currentRate = currentRate.div(105);
-      tokensInCondition = (weiAmount.div(currentRate))*(10**18);
+      tokensInCondition = currentRate*(10**18);
       if(tokensInCondition > remainingTokens.sub(50000000*(10**18))){
         tokensInCondition = remainingTokens.sub(50000000*(10**18));
         weiAmount = weiAmount.sub(tokensInCondition.mul(currentRate));
@@ -498,7 +498,7 @@ contract Crowdsale is Ownable{
     }
     if(remainingTokens <= 50000000*(10**18)){
       currentRate = rate;
-      tokensInCondition = (weiAmount.div(currentRate))*(10**18);
+      tokensInCondition = currentRate*(10**18);
       if(tokensInCondition > remainingTokens) {
         noOfTokens = remainingTokens;
         weiAmount = weiAmount.sub(noOfTokens.mul(currentRate));
