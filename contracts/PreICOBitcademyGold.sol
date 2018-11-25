@@ -2,11 +2,11 @@ pragma solidity ^0.4.23;
 
 import "./BitcademyToken.sol";
 import "./RefundVault.sol";
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "./Ownable.sol";
 
 /**
- * @title Crowdsale
- * @dev Crowdsale is a base contract for managing a token crowdsale,
+ * @title PreICOBitcademyGold
+ * @dev PreICOBitcademyGold is a base contract for managing a token crowdsale,
  * allowing investors to purchase tokens with ether. This contract implements
  * such functionality in its most fundamental form and can be extended to provide additional
  * functionality and/or custom behavior.
@@ -16,7 +16,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
  * the methods to add functionality. Consider using 'super' where appropiate to concatenate
  * behavior.
  */
-contract Crowdsale is Ownable{
+contract PreICOBitcademyGold is Ownable{
   using SafeMath for uint256;
 
   // The token being sold
@@ -198,7 +198,7 @@ contract Crowdsale is Ownable{
     closingTime = _closingTime;
 }
   // -----------------------------------------
-  // Crowdsale external interface
+  // PreICOBitcademyGold external interface
   // -----------------------------------------
 
   /**
@@ -212,7 +212,7 @@ contract Crowdsale is Ownable{
    * @dev low level token purchase ***DO NOT OVERRIDE***
    * @param _beneficiary Address performing the token purchase
    */
-  function buyTokens(address _beneficiary) public payable {
+  function buyTokens(address _beneficiary) public isWhitelisted(_beneficiary) payable {
     uint256 mimimumInvestment = 10**18;
     uint256 weiAmount = msg.value;
     if (investedAmount[_beneficiary] == 0){
@@ -307,10 +307,10 @@ contract Crowdsale is Ownable{
     address _beneficiary,
     uint256 _weiAmount
   )
-    internal
+    pure internal
   {
     require(_beneficiary != address(0));
-    require(_weiAmount != 0);
+    require(_weiAmount > 0);
   }
 
   /**
@@ -322,9 +322,10 @@ contract Crowdsale is Ownable{
     address _beneficiary,
     uint256 _weiAmount
   )
-    internal
+    view internal
   {
     // optional override
+        assert(investedAmount[_beneficiary] == _weiAmount);
   }
 
   /**
@@ -336,7 +337,7 @@ contract Crowdsale is Ownable{
     address _beneficiary,
     uint256 _tokenAmount
   )
-    internal
+    internal isWhitelisted(msg.sender)
   {
     token.transfer(_beneficiary, _tokenAmount);
 
@@ -373,9 +374,11 @@ contract Crowdsale is Ownable{
     address _beneficiary,
     uint256 _weiAmount
   )
-    internal
+    pure internal
   {
     // optional override
+    require(_beneficiary != address(0));
+    require(_weiAmount > 0);
   }
 
   /**
@@ -384,7 +387,7 @@ contract Crowdsale is Ownable{
    * @return Token price in weis
    */
   function _getTokenAmount(uint256 _weiAmount)
-    internal  returns (uint256, uint256)
+    isWhitelisted(msg.sender) internal  returns (uint256, uint256)
   {
     remainingTokens =  token.balanceOf(this);
     uint256 noOfTokens = 0;
@@ -409,7 +412,7 @@ contract Crowdsale is Ownable{
   /**
    * @dev Determines how ETH is stored/forwarded on purchases.
    */
-  function _forwardFunds(uint256 _value) internal {
+  function _forwardFunds(uint256 _value) internal isWhitelisted(msg.sender) {
     vault.deposit.value(_value)(msg.sender);
     if (investedAmount[msg.sender] == 0){
       investedAmount[msg.sender] = _value;
@@ -473,7 +476,7 @@ contract Crowdsale is Ownable{
     /**
  * @dev get goal amount
  */
-    function getGoal() onlyOwner public returns (uint256){
+    function getGoal() onlyOwner public view returns (uint256){
     return goal;
     }
 }
