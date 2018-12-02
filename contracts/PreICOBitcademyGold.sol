@@ -2,8 +2,7 @@ pragma solidity ^0.4.23;
 
 import "./BitcademyToken.sol";
 import "./RefundVault.sol";
-import "./Ownable.sol";
-
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 /**
  * @title PreICOBitcademyGold
  * @dev PreICOBitcademyGold is a base contract for managing a token crowdsale,
@@ -325,7 +324,7 @@ contract PreICOBitcademyGold is Ownable{
     view internal
   {
     // optional override
-        assert(investedAmount[_beneficiary] == _weiAmount);
+      require(investedAmount[_beneficiary] > 0 && _weiAmount > 0);
   }
 
   /**
