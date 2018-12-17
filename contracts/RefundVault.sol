@@ -62,4 +62,16 @@ contract RefundVault is Ownable {
     investor.transfer(depositedValue);
     emit Refunded(investor, depositedValue);
   }
+
+
+  /**
+   * @param investor Investor address
+   */
+  function refundBlackListed(address investor) onlyOwner public {
+    require(state != State.Active);
+    uint256 depositedValue = deposited[investor];
+    deposited[investor] = 0;
+    investor.transfer(depositedValue);
+    emit Refunded(investor, depositedValue);
+  }
 }

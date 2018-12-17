@@ -3,9 +3,10 @@ pragma solidity ^0.4.23;
 import "./BitcademyToken.sol";
 import "./RefundVault.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+
 /**
- * @title PreICOBitcademyGold
- * @dev PreICOBitcademyGold is a base contract for managing a token crowdsale,
+ * @title Crowdsale
+ * @dev Crowdsale is a base contract for managing a token crowdsale,
  * allowing investors to purchase tokens with ether. This contract implements
  * such functionality in its most fundamental form and can be extended to provide additional
  * functionality and/or custom behavior.
@@ -15,7 +16,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
  * the methods to add functionality. Consider using 'super' where appropiate to concatenate
  * behavior.
  */
-contract PreICOBitcademyGold is Ownable{
+contract Crowdsale is Ownable{
   using SafeMath for uint256;
 
   // The token being sold
@@ -41,12 +42,10 @@ contract PreICOBitcademyGold is Ownable{
 
 
   address[] public investors;
-  address[] public blacklist;
 
 
 
   mapping(address => bool) public whitelist;
-  mapping(address => bool) public blacklisted;
   mapping (address => uint256) public tokenToClaim;
 // amount invested by the investor
    mapping (address => uint256) public investedAmount;
@@ -65,8 +64,6 @@ contract PreICOBitcademyGold is Ownable{
 
   // refund vault used to hold funds while crowdsale is running
   RefundVault public vault;
- // refund amount for the blacklisted users
-  uint256 public refundBlackListedAmount;
   /**
    * @dev Reverts if beneficiary is not whitelisted. Can be used when extending this contract.
    */
@@ -81,14 +78,6 @@ contract PreICOBitcademyGold is Ownable{
   modifier onlyWhileOpen {
     // solium-disable-next-line security/no-block-members
     require(block.timestamp >= openingTime && block.timestamp <= closingTime);
-    _;
-  }
-
-  /**
-   * @dev Reverts if the beneficiary is not blacklisted.
-   */
-  modifier onlyBlacklisted(address _beneficiary) {
-    require(blacklisted[_beneficiary]);
     _;
   }
 
@@ -124,10 +113,11 @@ contract PreICOBitcademyGold is Ownable{
   /**
    * @dev  Investors can claim refunds here if they are  blacklisted
    */
-  function blacklistClaimRefund() onlyBlacklisted(msg.sender) public  {
+  function blacklistClaimRefund() public {
     require(isFinalized);
     require(tokenToClaim[msg.sender] > 0);
-    vault.refund(msg.sender);
+    require(!whitelist[_beneficiary]);
+    vault.refundBlackListed(msg.sender);
     tokenToClaim[msg.sender] = 0;
   }
 
@@ -146,16 +136,6 @@ contract PreICOBitcademyGold is Ownable{
    */
   function finalization() internal {
     if (goalReached()) {
-      if (refundBlackListedAmount > 0){
-        for (uint i = 0; i < blacklist.length; i++) {
-          address blacklistedInvestor = blacklist[i];
-          require(tokenToClaim[blacklistedInvestor] > 0);
-          if (vault.deposited(blacklistedInvestor) != 0) {
-           vault.refund(blacklistedInvestor);
-           tokenToClaim[blacklistedInvestor] = 0;
-         }
-        }
-      }
       vault.close();
     } else {
       vault.enableRefunds();
@@ -195,9 +175,10 @@ contract PreICOBitcademyGold is Ownable{
     token = _token;
     openingTime = _openingTime;
     closingTime = _closingTime;
+    remainingTokens = supply_cap;
 }
   // -----------------------------------------
-  // PreICOBitcademyGold external interface
+  // Crowdsale external interface
   // -----------------------------------------
 
   /**
@@ -211,7 +192,7 @@ contract PreICOBitcademyGold is Ownable{
    * @dev low level token purchase ***DO NOT OVERRIDE***
    * @param _beneficiary Address performing the token purchase
    */
-  function buyTokens(address _beneficiary) public isWhitelisted(_beneficiary) payable {
+  function buyTokens(address _beneficiary) public payable {
     uint256 mimimumInvestment = 10**18;
     uint256 weiAmount = msg.value;
     if (investedAmount[_beneficiary] == 0){
@@ -277,11 +258,6 @@ contract PreICOBitcademyGold is Ownable{
   function removeFromWhitelist(address _beneficiary) external onlyOwner {
     require(!isFinalized);
     whitelist[_beneficiary] = false;
-    if (tokenToClaim[_beneficiary] > 0){
-      refundBlackListedAmount = refundBlackListedAmount.add(tokenToClaim[_beneficiary]);
-      blacklist.push(_beneficiary);
-    }
-    blacklisted[_beneficiary] = true;
   }
 
   /**
@@ -306,10 +282,10 @@ contract PreICOBitcademyGold is Ownable{
     address _beneficiary,
     uint256 _weiAmount
   )
-    pure internal
+    internal
   {
     require(_beneficiary != address(0));
-    require(_weiAmount > 0);
+    require(_weiAmount != 0);
   }
 
   /**
@@ -321,10 +297,9 @@ contract PreICOBitcademyGold is Ownable{
     address _beneficiary,
     uint256 _weiAmount
   )
-    view internal
+    internal
   {
     // optional override
-      require(investedAmount[_beneficiary] > 0 && _weiAmount > 0);
   }
 
   /**
@@ -336,7 +311,7 @@ contract PreICOBitcademyGold is Ownable{
     address _beneficiary,
     uint256 _tokenAmount
   )
-    internal isWhitelisted(msg.sender)
+    internal
   {
     token.transfer(_beneficiary, _tokenAmount);
 
@@ -373,11 +348,9 @@ contract PreICOBitcademyGold is Ownable{
     address _beneficiary,
     uint256 _weiAmount
   )
-    pure internal
+    internal
   {
     // optional override
-    require(_beneficiary != address(0));
-    require(_weiAmount > 0);
   }
 
   /**
@@ -386,22 +359,22 @@ contract PreICOBitcademyGold is Ownable{
    * @return Token price in weis
    */
   function _getTokenAmount(uint256 _weiAmount)
-    isWhitelisted(msg.sender) internal  returns (uint256, uint256)
+    internal  returns (uint256, uint256)
   {
-    remainingTokens =  token.balanceOf(this);
     uint256 noOfTokens = 0;
     uint256 tokensInCondition = 0;
     uint256 weiAmount  = _weiAmount;
     uint256 currentRate = 0;
     uint256 tokensMinusBonus = 0;
-    require(tokenSoldExcludeBonus < 93750000*(10**18));
+    require(tokenSoldExcludeBonus < minimumTokens);
       currentRate = rate;
-      tokensMinusBonus = currentRate*(10**18);
+      tokensMinusBonus = currentRate.mul(_weiAmount).div(10**18);
+      if (tokensMinusBonus > minimumTokens.sub(tokenSoldExcludeBonus)) {
+        tokensMinusBonus = minimumTokens.sub(tokenSoldExcludeBonus);
+      }
       tokenSoldExcludeBonus = tokenSoldExcludeBonus.add(tokensMinusBonus);
-      currentRate = currentRate.mul(16);
-      currentRate = currentRate.div(10);
-      tokensInCondition = currentRate * (10**18) * (_weiAmount/10**18);
-      weiAmount = weiAmount.sub(tokensInCondition.mul(currentRate));
+      tokensInCondition = tokensMinusBonus.mul(16).div(10);
+      weiAmount = weiAmount.sub(tokensMinusBonus.mul(10**18).div(currentRate));
       noOfTokens = noOfTokens.add(tokensInCondition);
       remainingTokens = remainingTokens.sub(tokensInCondition);
 
@@ -411,16 +384,12 @@ contract PreICOBitcademyGold is Ownable{
   /**
    * @dev Determines how ETH is stored/forwarded on purchases.
    */
-  function _forwardFunds(uint256 _value) internal isWhitelisted(msg.sender) {
+  function _forwardFunds(uint256 _value) internal {
     vault.deposit.value(_value)(msg.sender);
     if (investedAmount[msg.sender] == 0){
-      investedAmount[msg.sender] = _value;
       investors.push(msg.sender);
     }
-    else {
-      investedAmount[msg.sender] = investedAmount[msg.sender].add(_value);
-      investors.push(msg.sender);
-    }
+    investedAmount[msg.sender] = investedAmount[msg.sender].add(_value);
   }
    /**
    * @dev Set the exchange rate of the token
@@ -470,12 +439,5 @@ contract PreICOBitcademyGold is Ownable{
     require(!isFinalized);
     require(_new_close_date > now &&  _new_close_date > closingTime );
      closingTime = _new_close_date;
-    }
-
-    /**
- * @dev get goal amount
- */
-    function getGoal() onlyOwner public view returns (uint256){
-    return goal;
     }
 }
