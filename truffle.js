@@ -1,6 +1,6 @@
 //const HDWalletProvider = require("truffle-hdwallet-provider-privkey");
 const privKey = "<private key here>";
-const mnemonic = "clump diagram small enter enroll bench half ribbon appear useless monitor route";
+const mnemonic = "";
 const HDWalletProvider = require("truffle-hdwallet-provider");
 
 module.exports = {
