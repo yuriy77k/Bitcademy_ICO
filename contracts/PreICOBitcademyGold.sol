@@ -116,7 +116,7 @@ contract Crowdsale is Ownable{
   function blacklistClaimRefund() public {
     require(isFinalized);
     require(tokenToClaim[msg.sender] > 0);
-    require(!whitelist[_beneficiary]);
+    require(!whitelist[msg.sender]);
     vault.refundBlackListed(msg.sender);
     tokenToClaim[msg.sender] = 0;
   }
