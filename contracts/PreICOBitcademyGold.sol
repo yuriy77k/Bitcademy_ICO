@@ -1,3 +1,4 @@
+
 pragma solidity ^0.4.23;
 
 import "./BitcademyToken.sol";
@@ -54,11 +55,12 @@ contract Crowdsale is Ownable{
   uint256 public closingTime;
 
   // Remaining tokens which are yet to be sold
-  uint256 public remainingTokens;
+ uint256 public remainingTokens;
 
   // Tokens sold excluding bonus
   uint256 public tokenSoldExcludeBonus;
-
+  // total tokens sold
+  uint256 public totalTokenSold;
   // minimum amount of funds to be raised in weis
   uint256 public goal;
 
@@ -175,7 +177,7 @@ contract Crowdsale is Ownable{
     token = _token;
     openingTime = _openingTime;
     closingTime = _closingTime;
-    remainingTokens = supply_cap;
+   // remainingTokens = _remainingTokens;
 }
   // -----------------------------------------
   // Crowdsale external interface
@@ -366,7 +368,8 @@ contract Crowdsale is Ownable{
     uint256 weiAmount  = _weiAmount;
     uint256 currentRate = 0;
     uint256 tokensMinusBonus = 0;
-    require(tokenSoldExcludeBonus < minimumTokens);
+    remainingTokens = supply_cap.sub(totalTokenSold);   
+    require(tokenSoldExcludeBonus <= minimumTokens);
       currentRate = rate;
       tokensMinusBonus = currentRate.mul(_weiAmount).div(10**18);
       if (tokensMinusBonus > minimumTokens.sub(tokenSoldExcludeBonus)) {
@@ -374,10 +377,10 @@ contract Crowdsale is Ownable{
       }
       tokenSoldExcludeBonus = tokenSoldExcludeBonus.add(tokensMinusBonus);
       tokensInCondition = tokensMinusBonus.mul(16).div(10);
-      weiAmount = weiAmount.sub(tokensMinusBonus.mul(10**18).div(currentRate));
+      weiAmount = weiAmount.sub(tokensMinusBonus.div(currentRate));
       noOfTokens = noOfTokens.add(tokensInCondition);
       remainingTokens = remainingTokens.sub(tokensInCondition);
-
+      totalTokenSold = totalTokenSold.add(noOfTokens);
     return (noOfTokens, weiAmount);
   }
 
