@@ -1,5 +1,6 @@
 //const HDWalletProvider = require("truffle-hdwallet-provider-privkey");
 const privKey = "<private key here>";
+//const mnemonic = "come hover maple exhaust proud invite sweet elegant seven pair stock toy"; 
 const mnemonic = "clump diagram small enter enroll bench half ribbon appear useless monitor route";
 const HDWalletProvider = require("truffle-hdwallet-provider");
 
@@ -16,7 +17,7 @@ module.exports = {
         provider: () => { return new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/PGeaCCgYpthSugPncips")},
         network_id: '4',
         gas: 6700000,
-        gasPrice: 500000000000
+        gasPrice: 140000000000
 
       },
       development: {

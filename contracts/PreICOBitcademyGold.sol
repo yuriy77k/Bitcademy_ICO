@@ -17,7 +17,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
  * the methods to add functionality. Consider using 'super' where appropiate to concatenate
  * behavior.
  */
-contract Crowdsale is Ownable{
+contract PreICOBitcademyGold is Ownable{
   using SafeMath for uint256;
 
   // The token being sold
@@ -195,42 +195,42 @@ contract Crowdsale is Ownable{
    * @param _beneficiary Address performing the token purchase
    */
   function buyTokens(address _beneficiary) public payable {
-    uint256 mimimumInvestment = 10**18;
-    uint256 weiAmount = msg.value;
+    uint256 minimumInvestment = 10**18;
+    uint256 weiValue = msg.value;
     if (investedAmount[_beneficiary] == 0){
-      require(weiAmount > mimimumInvestment);
+      require(weiValue > minimumInvestment);
     }
 
     uint256 refundWeiAmt = 0;
     uint256 tokens = 0;
-    _preValidatePurchase(_beneficiary, weiAmount);
+    _preValidatePurchase(_beneficiary, weiValue);
 
     // calculate token amount to be delivered
-     (tokens, refundWeiAmt) = _getTokenAmount(weiAmount);
-
+     (tokens, refundWeiAmt) = _getTokenAmount(weiValue);
+      
     /* If the remaining tokens are less than tokens calculated above
      * proceed with purchase of remaining tokens and refund the remaining ethers
      * to the caller
      */
-    if(refundWeiAmt > 0) {
+    if(refundWeiAmt > 1) {
       msg.sender.transfer(refundWeiAmt);
-      weiAmount = weiAmount.sub(refundWeiAmt);
+      weiValue = weiValue.sub(refundWeiAmt);
     }
 
     // update state
-    weiRaised = weiRaised.add(weiAmount);
+    weiRaised = weiRaised.add(weiValue);
 
     _processPurchase(_beneficiary, tokens);
     emit TokenPurchase(
       msg.sender,
       _beneficiary,
-      weiAmount,
+      weiValue,
       tokens
     );
 
-    _updatePurchasingState(_beneficiary, weiAmount);
-    _forwardFunds(weiAmount);
-    _postValidatePurchase(_beneficiary, weiAmount);
+    _updatePurchasingState(_beneficiary, weiValue);
+    _forwardFunds(weiValue);
+    _postValidatePurchase(_beneficiary, weiValue);
   }
 
   /**
@@ -370,14 +370,15 @@ contract Crowdsale is Ownable{
     uint256 tokensMinusBonus = 0;
     remainingTokens = supply_cap.sub(totalTokenSold);   
     require(tokenSoldExcludeBonus <= minimumTokens);
-      currentRate = rate;
+     currentRate = rate;
       tokensMinusBonus = currentRate.mul(_weiAmount).div(10**18);
       if (tokensMinusBonus > minimumTokens.sub(tokenSoldExcludeBonus)) {
         tokensMinusBonus = minimumTokens.sub(tokenSoldExcludeBonus);
       }
       tokenSoldExcludeBonus = tokenSoldExcludeBonus.add(tokensMinusBonus);
       tokensInCondition = tokensMinusBonus.mul(16).div(10);
-      weiAmount = weiAmount.sub(tokensMinusBonus.div(currentRate));
+      //weiAmount = weiAmount.sub(tokensMinusBonus.div(10**18).mul(currentRate));
+      weiAmount = 0;
       noOfTokens = noOfTokens.add(tokensInCondition);
       remainingTokens = remainingTokens.sub(tokensInCondition);
       totalTokenSold = totalTokenSold.add(noOfTokens);
@@ -402,6 +403,18 @@ contract Crowdsale is Ownable{
     rate = _rate;
   }
 
+   /**
+   * @dev Get the token exchange rate
+   */
+  function getRate() public returns (uint256) {
+    return rate;
+  }
+  /**
+   * @dev Get the token  sale  goal
+   */
+  function getGoal() public returns (uint256) {
+    return goal;
+  }
    /**
    * @dev calculate the number of investors in crowdsale
    */
@@ -443,4 +456,5 @@ contract Crowdsale is Ownable{
     require(_new_close_date > now &&  _new_close_date > closingTime );
      closingTime = _new_close_date;
     }
+   
 }
