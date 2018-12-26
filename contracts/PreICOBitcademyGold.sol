@@ -377,7 +377,6 @@ contract PreICOBitcademyGold is Ownable{
       }
       tokenSoldExcludeBonus = tokenSoldExcludeBonus.add(tokensMinusBonus);
       tokensInCondition = tokensMinusBonus.mul(16).div(10);
-      //weiAmount = weiAmount.sub(tokensMinusBonus.div(10**18).mul(currentRate));
       weiAmount = 0;
       noOfTokens = noOfTokens.add(tokensInCondition);
       remainingTokens = remainingTokens.sub(tokensInCondition);
