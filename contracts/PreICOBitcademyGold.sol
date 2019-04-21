@@ -28,7 +28,7 @@ contract PreICOBitcademyGold is Ownable{
    //address public _multi_sig_wallet = 0xc5384F3d5602eC5F52e50F28e650685E9c5F3016;
 
     //custom release date
-   uint256 public release_date = 1556582400;
+   uint256 public release_date = 1565827200;
   // No of Tokens per Ether
   uint256 public rate;
 
@@ -37,9 +37,9 @@ contract PreICOBitcademyGold is Ownable{
 
 
   //amount of tokens to be sold for Private Sale preICO
-  uint256 public supply_cap = 150000000*(10**18);
+  uint256 public supply_cap = 90000000*(10**18);
   // maximum token selleable without bonuses
-  uint256 public minimumTokens = 93750000*(10**18);
+  uint256 public minimumTokens = 67500000*(10**18);
 
 
   address[] public investors;
@@ -207,7 +207,7 @@ contract PreICOBitcademyGold is Ownable{
 
     // calculate token amount to be delivered
      (tokens, refundWeiAmt) = _getTokenAmount(weiValue);
-      
+
     /* If the remaining tokens are less than tokens calculated above
      * proceed with purchase of remaining tokens and refund the remaining ethers
      * to the caller
@@ -368,7 +368,7 @@ contract PreICOBitcademyGold is Ownable{
     uint256 weiAmount  = _weiAmount;
     uint256 currentRate = 0;
     uint256 tokensMinusBonus = 0;
-    remainingTokens = supply_cap.sub(totalTokenSold);   
+    remainingTokens = supply_cap.sub(totalTokenSold);
     require(tokenSoldExcludeBonus <= minimumTokens);
      currentRate = rate;
       tokensMinusBonus = currentRate.mul(_weiAmount).div(10**18);
@@ -376,7 +376,7 @@ contract PreICOBitcademyGold is Ownable{
         tokensMinusBonus = minimumTokens.sub(tokenSoldExcludeBonus);
       }
       tokenSoldExcludeBonus = tokenSoldExcludeBonus.add(tokensMinusBonus);
-      tokensInCondition = tokensMinusBonus.mul(16).div(10);
+      tokensInCondition = tokensMinusBonus.mul(125).div(100);
       weiAmount = 0;
       noOfTokens = noOfTokens.add(tokensInCondition);
       remainingTokens = remainingTokens.sub(tokensInCondition);
@@ -455,5 +455,5 @@ contract PreICOBitcademyGold is Ownable{
     require(_new_close_date > now &&  _new_close_date > closingTime );
      closingTime = _new_close_date;
     }
-   
+
 }
