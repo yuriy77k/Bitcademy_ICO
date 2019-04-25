@@ -1,3 +1,4 @@
+
 pragma solidity ^0.4.23;
 
 import "./BitcademyToken.sol";
@@ -16,7 +17,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
  * the methods to add functionality. Consider using 'super' where appropiate to concatenate
  * behavior.
  */
-contract Crowdsale is Ownable{
+contract PreICOBitcademyGold is Ownable{
   using SafeMath for uint256;
 
   // The token being sold
@@ -27,7 +28,7 @@ contract Crowdsale is Ownable{
    //address public _multi_sig_wallet = 0xc5384F3d5602eC5F52e50F28e650685E9c5F3016;
 
     //custom release date
-   uint256 public release_date = 1556582400;
+   uint256 public release_date = 1565827200;
   // No of Tokens per Ether
   uint256 public rate;
 
@@ -36,9 +37,9 @@ contract Crowdsale is Ownable{
 
 
   //amount of tokens to be sold for Private Sale preICO
-  uint256 public supply_cap = 150000000*(10**18);
+  uint256 public supply_cap = 90000000*(10**18);
   // maximum token selleable without bonuses
-  uint256 public minimumTokens = 93750000*(10**18);
+  uint256 public minimumTokens = 67500000*(10**18);
 
 
   address[] public investors;
@@ -54,11 +55,12 @@ contract Crowdsale is Ownable{
   uint256 public closingTime;
 
   // Remaining tokens which are yet to be sold
-  uint256 public remainingTokens;
+ uint256 public remainingTokens;
 
   // Tokens sold excluding bonus
   uint256 public tokenSoldExcludeBonus;
-
+  // total tokens sold
+  uint256 public totalTokenSold;
   // minimum amount of funds to be raised in weis
   uint256 public goal;
 
@@ -100,26 +102,9 @@ contract Crowdsale is Ownable{
     isFinalized = true;
   }
 
-  /**
-   * @dev Investors can claim refunds here if crowdsale is unsuccessful
-   */
-  function claimRefund() public {
-    require(isFinalized);
-    require(!goalReached());
 
-    vault.refund(msg.sender);
-  }
 
-  /**
-   * @dev  Investors can claim refunds here if they are  blacklisted
-   */
-  function blacklistClaimRefund() public {
-    require(isFinalized);
-    require(tokenToClaim[msg.sender] > 0);
-    require(!whitelist[_beneficiary]);
-    vault.refundBlackListed(msg.sender);
-    tokenToClaim[msg.sender] = 0;
-  }
+
 
   /**
    * @dev Checks whether funding goal was reached.
@@ -135,11 +120,8 @@ contract Crowdsale is Ownable{
    * @dev vault finalization task, called when owner calls finalize()
    */
   function finalization() internal {
-    if (goalReached()) {
       vault.close();
-    } else {
-      vault.enableRefunds();
-    }
+
   }
 
   /**
@@ -175,7 +157,7 @@ contract Crowdsale is Ownable{
     token = _token;
     openingTime = _openingTime;
     closingTime = _closingTime;
-    remainingTokens = supply_cap;
+   // remainingTokens = _remainingTokens;
 }
   // -----------------------------------------
   // Crowdsale external interface
@@ -193,42 +175,43 @@ contract Crowdsale is Ownable{
    * @param _beneficiary Address performing the token purchase
    */
   function buyTokens(address _beneficiary) public payable {
-    uint256 mimimumInvestment = 10**18;
-    uint256 weiAmount = msg.value;
+    require(!goalReached());
+    uint256 minimumInvestment = 10**18;
+    uint256 weiValue = msg.value;
     if (investedAmount[_beneficiary] == 0){
-      require(weiAmount > mimimumInvestment);
+      require(weiValue > minimumInvestment);
     }
 
     uint256 refundWeiAmt = 0;
     uint256 tokens = 0;
-    _preValidatePurchase(_beneficiary, weiAmount);
+    _preValidatePurchase(_beneficiary, weiValue);
 
     // calculate token amount to be delivered
-     (tokens, refundWeiAmt) = _getTokenAmount(weiAmount);
+     (tokens, refundWeiAmt) = _getTokenAmount(weiValue);
 
     /* If the remaining tokens are less than tokens calculated above
      * proceed with purchase of remaining tokens and refund the remaining ethers
      * to the caller
      */
-    if(refundWeiAmt > 0) {
+    if(refundWeiAmt > 1) {
       msg.sender.transfer(refundWeiAmt);
-      weiAmount = weiAmount.sub(refundWeiAmt);
+      weiValue = weiValue.sub(refundWeiAmt);
     }
 
     // update state
-    weiRaised = weiRaised.add(weiAmount);
+    weiRaised = weiRaised.add(weiValue);
 
     _processPurchase(_beneficiary, tokens);
     emit TokenPurchase(
       msg.sender,
       _beneficiary,
-      weiAmount,
+      weiValue,
       tokens
     );
 
-    _updatePurchasingState(_beneficiary, weiAmount);
-    _forwardFunds(weiAmount);
-    _postValidatePurchase(_beneficiary, weiAmount);
+    _updatePurchasingState(_beneficiary, weiValue);
+    _forwardFunds(weiValue);
+    _postValidatePurchase(_beneficiary, weiValue);
   }
 
   /**
@@ -366,18 +349,19 @@ contract Crowdsale is Ownable{
     uint256 weiAmount  = _weiAmount;
     uint256 currentRate = 0;
     uint256 tokensMinusBonus = 0;
-    require(tokenSoldExcludeBonus < minimumTokens);
-      currentRate = rate;
+    remainingTokens = supply_cap.sub(totalTokenSold);
+    require(tokenSoldExcludeBonus <= minimumTokens);
+     currentRate = rate;
       tokensMinusBonus = currentRate.mul(_weiAmount).div(10**18);
       if (tokensMinusBonus > minimumTokens.sub(tokenSoldExcludeBonus)) {
         tokensMinusBonus = minimumTokens.sub(tokenSoldExcludeBonus);
       }
       tokenSoldExcludeBonus = tokenSoldExcludeBonus.add(tokensMinusBonus);
-      tokensInCondition = tokensMinusBonus.mul(16).div(10);
-      weiAmount = weiAmount.sub(tokensMinusBonus.mul(10**18).div(currentRate));
+      tokensInCondition = tokensMinusBonus.mul(125).div(100);
+      weiAmount = 0;
       noOfTokens = noOfTokens.add(tokensInCondition);
       remainingTokens = remainingTokens.sub(tokensInCondition);
-
+      totalTokenSold = totalTokenSold.add(noOfTokens);
     return (noOfTokens, weiAmount);
   }
 
@@ -400,6 +384,18 @@ contract Crowdsale is Ownable{
   }
 
    /**
+   * @dev Get the token exchange rate
+   */
+  function getRate() public returns (uint256) {
+    return rate;
+  }
+  /**
+   * @dev Get the token  sale  goal
+   */
+  function getGoal() public returns (uint256) {
+    return goal;
+  }
+   /**
    * @dev calculate the number of investors in crowdsale
    */
 
@@ -412,7 +408,7 @@ contract Crowdsale is Ownable{
    */
 
   function withdrawAfterMainSale() isWhitelisted(msg.sender) public {
-    require(goalReached());
+    //require(goalReached());
     require(release_date < now);
     require(isFinalized);
     require(tokenToClaim[msg.sender] >= 0);
@@ -440,4 +436,5 @@ contract Crowdsale is Ownable{
     require(_new_close_date > now &&  _new_close_date > closingTime );
      closingTime = _new_close_date;
     }
+
 }

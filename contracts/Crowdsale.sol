@@ -26,7 +26,7 @@ contract Crowdsale is Ownable{
   //address public wallet;
 
     //custom release date
-   uint256 public release_date = 1556582400;
+   uint256 public release_date = 1565827200;
   // No of Tokens per ether
   uint256 public rate;
 
@@ -37,7 +37,7 @@ contract Crowdsale is Ownable{
   uint256 public weiRaised;
 
   //amount of tokens to be sold for Main ICO
-  uint256 public supply_cap = 350000000000000000000000000;
+  uint256 public supply_cap = 410000000000000000000000000;
 
 
 // amount invested by the investor
@@ -102,28 +102,6 @@ contract Crowdsale is Ownable{
   }
 
   /**
-   * @dev Investors can claim refunds here if crowdsale is unsuccessful
-   */
-  function claimRefund() public {
-    require(isFinalized);
-    require(!goalReached());
-
-    vault.refund(msg.sender);
-  }
-
-  /**
-   * @dev Investors can claim refunds here if the blacklisted
-   */
-   function blacklistClaimRefund() public {
-     require(isFinalized);
-     require(tokenToClaim[msg.sender] > 0);
-     require(!whitelist[_beneficiary]);
-     vault.refundBlackListed(msg.sender);
-     tokenToClaim[msg.sender] = 0;
-   }
-
-
-  /**
    * @dev Checks whether funding goal was reached.
    * @return Whether funding goal was reached
    */
@@ -137,11 +115,7 @@ contract Crowdsale is Ownable{
    * @dev vault finalization task, called when owner calls finalize()
    */
    function finalization() internal {
-     if (goalReached()) {
        vault.close();
-     } else {
-       vault.enableRefunds();
-     }
    }
 
   /**
@@ -198,7 +172,7 @@ contract Crowdsale is Ownable{
    * @param _beneficiary Address performing the token purchase
    */
   function buyTokens(address _beneficiary) public payable {
-
+    require(!goalReached());
     uint256 weiAmount = msg.value;
     uint256 minimumPurchase = weiAmount.mul(100).div(price);
     require(weiAmount >= minimumPurchase);
@@ -369,13 +343,13 @@ contract Crowdsale is Ownable{
     uint256 weiAmount  = _weiAmount;
     uint256 currentRate = 0;
 
-    if(remainingTokens > 300000000 && weiAmount > 0 ) {
+    if(remainingTokens > 328000000*(10**18) && weiAmount > 0 ) {
       currentRate = rate;
-      currentRate = currentRate.mul(13);
+      currentRate = currentRate.mul(12);
       currentRate = currentRate.div(10);
       tokensInCondition = currentRate.mul(_weiAmount).div(10**18);
-      if(tokensInCondition > remainingTokens.sub(300000000*(10**18))){
-        tokensInCondition = remainingTokens.sub(300000000*(10**18));
+      if(tokensInCondition > remainingTokens.sub(328000000*(10**18))){
+        tokensInCondition = remainingTokens.sub(328000000*(10**18));
         weiAmount = weiAmount.sub(tokensInCondition.mul(10**18).div(currentRate));
         noOfTokens = noOfTokens.add(tokensInCondition);
         remainingTokens = remainingTokens.sub(tokensInCondition);
@@ -387,13 +361,13 @@ contract Crowdsale is Ownable{
       }
     }
 
-    if (remainingTokens <= 300000000*(10**18) && remainingTokens > 250000000*(10**18) && weiAmount > 0){
+    if (remainingTokens <= 328000000*(10**18) && remainingTokens > 246000000*(10**18) && weiAmount > 0){
       currentRate = rate;
-      currentRate = currentRate.mul(125);
+      currentRate = currentRate.mul(115);
       currentRate = currentRate.div(100);
       tokensInCondition = currentRate.mul(_weiAmount).div(10**18);
-      if(tokensInCondition > remainingTokens.sub(250000000*(10**18))){
-        tokensInCondition = remainingTokens.sub(250000000*(10**18));
+      if(tokensInCondition > remainingTokens.sub(246000000*(10**18))){
+        tokensInCondition = remainingTokens.sub(246000000*(10**18));
         weiAmount = weiAmount.sub(tokensInCondition.mul(10**18).div(currentRate));
         noOfTokens = noOfTokens.add(tokensInCondition);
         remainingTokens = remainingTokens.sub(noOfTokens);
@@ -404,47 +378,13 @@ contract Crowdsale is Ownable{
         remainingTokens = remainingTokens.sub(tokensInCondition);
       }
     }
-    if (remainingTokens <= 250000000*(10**18) && remainingTokens > 200000000*(10**18) && weiAmount > 0 ){
-      currentRate = rate;
-      currentRate = currentRate.mul(120);
-      currentRate = currentRate.div(100);
-      tokensInCondition = currentRate.mul(_weiAmount).div(10**18);
-      if(tokensInCondition > remainingTokens.sub(200000000*(10**18))){
-        tokensInCondition = remainingTokens.sub(200000000*(10**18));
-        weiAmount = weiAmount.sub(tokensInCondition.mul(10**18).div(currentRate));
-        noOfTokens = noOfTokens.add(tokensInCondition);
-        remainingTokens = remainingTokens.sub(tokensInCondition);
-      }
-      else{
-        noOfTokens = noOfTokens.add(tokensInCondition);
-        weiAmount = 0;
-        remainingTokens = remainingTokens.sub(tokensInCondition);
-      }
-    }
-    if (remainingTokens <= 200000000*(10**18) && remainingTokens > 150000000*(10**18) && weiAmount > 0 ){
-      currentRate = rate;
-      currentRate = currentRate.mul(115);
-      currentRate = currentRate.div(100);
-      tokensInCondition = currentRate.mul(_weiAmount).div(10**18);
-      if(tokensInCondition > remainingTokens.sub(150000000*(10**18))){
-        tokensInCondition = remainingTokens.sub(150000000*(10**18));
-        weiAmount = weiAmount.sub(tokensInCondition.mul(10**18).div(currentRate));
-        noOfTokens = noOfTokens.add(tokensInCondition);
-        remainingTokens = remainingTokens.sub(tokensInCondition);
-      }
-      else{
-        noOfTokens = noOfTokens.add(tokensInCondition);
-        weiAmount = 0;
-        remainingTokens = remainingTokens.sub(tokensInCondition);
-      }
-    }
-     if (remainingTokens <= 150000000*(10**18) && remainingTokens > 100000000*(10**18) && weiAmount > 0){
+    if (remainingTokens <= 246000000*(10**18) && remainingTokens > 164000000*(10**18) && weiAmount > 0 ){
       currentRate = rate;
       currentRate = currentRate.mul(11);
       currentRate = currentRate.div(10);
       tokensInCondition = currentRate.mul(_weiAmount).div(10**18);
-      if(tokensInCondition > remainingTokens.sub(100000000*(10**18))){
-        tokensInCondition = remainingTokens.sub(100000000*(10**18));
+      if(tokensInCondition > remainingTokens.sub(164000000*(10**18))){
+        tokensInCondition = remainingTokens.sub(164000000*(10**18));
         weiAmount = weiAmount.sub(tokensInCondition.mul(10**18).div(currentRate));
         noOfTokens = noOfTokens.add(tokensInCondition);
         remainingTokens = remainingTokens.sub(tokensInCondition);
@@ -455,14 +395,13 @@ contract Crowdsale is Ownable{
         remainingTokens = remainingTokens.sub(tokensInCondition);
       }
     }
-
-    if (remainingTokens <= 100000000*(10**18) && remainingTokens > 50000000*(10**18) ){
+    if (remainingTokens <= 164000000*(10**18) && remainingTokens > 82000000*(10**18) && weiAmount > 0 ){
       currentRate = rate;
       currentRate = currentRate.mul(105);
       currentRate = currentRate.div(100);
       tokensInCondition = currentRate.mul(_weiAmount).div(10**18);
-      if(tokensInCondition > remainingTokens.sub(50000000*(10**18))){
-        tokensInCondition = remainingTokens.sub(50000000*(10**18));
+      if(tokensInCondition > remainingTokens.sub(82000000*(10**18))){
+        tokensInCondition = remainingTokens.sub(82000000*(10**18));
         weiAmount = weiAmount.sub(tokensInCondition.mul(10**18).div(currentRate));
         noOfTokens = noOfTokens.add(tokensInCondition);
         remainingTokens = remainingTokens.sub(tokensInCondition);
@@ -473,7 +412,7 @@ contract Crowdsale is Ownable{
         remainingTokens = remainingTokens.sub(tokensInCondition);
       }
     }
-    if(remainingTokens <= 50000000*(10**18)){
+    if(remainingTokens <= 82000000*(10**18)){
       currentRate = rate;
       tokensInCondition = currentRate.mul(_weiAmount).div(10**18);
       if(tokensInCondition > remainingTokens) {
@@ -529,7 +468,7 @@ contract Crowdsale is Ownable{
    */
 
   function withdrawAfterMainSale() isWhitelisted(msg.sender) public {
-    require(goalReached());
+    //require(goalReached());
     require(release_date < now);
     require(isFinalized);
     require(tokenToClaim[msg.sender] >= 0);
