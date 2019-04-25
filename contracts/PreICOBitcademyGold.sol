@@ -102,26 +102,9 @@ contract PreICOBitcademyGold is Ownable{
     isFinalized = true;
   }
 
-  /**
-   * @dev Investors can claim refunds here if crowdsale is unsuccessful
-   */
-  function claimRefund() public {
-    require(isFinalized);
-    require(!goalReached());
 
-    vault.refund(msg.sender);
-  }
 
-  /**
-   * @dev  Investors can claim refunds here if they are  blacklisted
-   */
-  function blacklistClaimRefund() public {
-    require(isFinalized);
-    require(tokenToClaim[msg.sender] > 0);
-    require(!whitelist[msg.sender]);
-    vault.refundBlackListed(msg.sender);
-    tokenToClaim[msg.sender] = 0;
-  }
+
 
   /**
    * @dev Checks whether funding goal was reached.
@@ -137,11 +120,8 @@ contract PreICOBitcademyGold is Ownable{
    * @dev vault finalization task, called when owner calls finalize()
    */
   function finalization() internal {
-    if (goalReached()) {
       vault.close();
-    } else {
-      vault.enableRefunds();
-    }
+
   }
 
   /**
@@ -195,6 +175,7 @@ contract PreICOBitcademyGold is Ownable{
    * @param _beneficiary Address performing the token purchase
    */
   function buyTokens(address _beneficiary) public payable {
+    require(!goalReached());
     uint256 minimumInvestment = 10**18;
     uint256 weiValue = msg.value;
     if (investedAmount[_beneficiary] == 0){
@@ -427,7 +408,7 @@ contract PreICOBitcademyGold is Ownable{
    */
 
   function withdrawAfterMainSale() isWhitelisted(msg.sender) public {
-    require(goalReached());
+    //require(goalReached());
     require(release_date < now);
     require(isFinalized);
     require(tokenToClaim[msg.sender] >= 0);
