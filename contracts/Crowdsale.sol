@@ -102,28 +102,6 @@ contract Crowdsale is Ownable{
   }
 
   /**
-   * @dev Investors can claim refunds here if crowdsale is unsuccessful
-   */
-  function claimRefund() public {
-    require(isFinalized);
-    require(!goalReached());
-
-    vault.refund(msg.sender);
-  }
-
-  /**
-   * @dev Investors can claim refunds here if the blacklisted
-   */
-   function blacklistClaimRefund() public {
-     require(isFinalized);
-     require(tokenToClaim[msg.sender] > 0);
-     require(!whitelist[msg.sender]);
-     vault.refundBlackListed(msg.sender);
-     tokenToClaim[msg.sender] = 0;
-   }
-
-
-  /**
    * @dev Checks whether funding goal was reached.
    * @return Whether funding goal was reached
    */
@@ -137,11 +115,7 @@ contract Crowdsale is Ownable{
    * @dev vault finalization task, called when owner calls finalize()
    */
    function finalization() internal {
-     if (goalReached()) {
        vault.close();
-     } else {
-       vault.enableRefunds();
-     }
    }
 
   /**
@@ -198,7 +172,7 @@ contract Crowdsale is Ownable{
    * @param _beneficiary Address performing the token purchase
    */
   function buyTokens(address _beneficiary) public payable {
-
+    require(!goalReached());
     uint256 weiAmount = msg.value;
     uint256 minimumPurchase = weiAmount.mul(100).div(price);
     require(weiAmount >= minimumPurchase);
@@ -494,7 +468,7 @@ contract Crowdsale is Ownable{
    */
 
   function withdrawAfterMainSale() isWhitelisted(msg.sender) public {
-    require(goalReached());
+    //require(goalReached());
     require(release_date < now);
     require(isFinalized);
     require(tokenToClaim[msg.sender] >= 0);

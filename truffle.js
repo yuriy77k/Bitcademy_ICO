@@ -1,6 +1,6 @@
 //const HDWalletProvider = require("truffle-hdwallet-provider-privkey");
 const privKey = "<private key here>";
-const mnemonic = "";
+const mnemonic = "clump diagram small enter enroll bench half ribbon appear useless monitor route";
 const HDWalletProvider = require("truffle-hdwallet-provider");
 
 module.exports = {
@@ -13,10 +13,10 @@ module.exports = {
         network_id: '3'
       },
       rinkeby: {
-        provider: () => { return new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/PGeaCCgYpthSugPncips")},
+        provider: () => { return new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/v3/6df9d2c434974a49af0e420cbdc4fc7a")},
         network_id: '4',
-        gas: 6700000,
-        gasPrice: 140000000000
+        gas: 7000000,
+        gasPrice: 200000000000
 
       },
       development: {
